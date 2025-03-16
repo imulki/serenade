@@ -18,8 +18,13 @@ pip install -e .
 ```
 
 ### Training
+The README instructions are a work in progress. Detailed instructions will be available by Mar. 21 at the latest. 
 
-### Inference
+```
+cd egs/gtsinger/ssc1
+./run.sh
+```
+
 
 ## Pretrained Models
 
