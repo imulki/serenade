@@ -137,7 +137,7 @@ def linear_midi_shift(srcmidi, trgmidi):
     idx_s = srcmidi > 0
     idx_t = trgmidi > 0
     #sm[idx_s] = np.exp(srcmidi[idx_s])
-    tm[idx_t] = np.exp(trgmidi[idx_t])
+    #tm[idx_t] = np.exp(trgmidi[idx_t])
 
     srcstats = f0class.estimate([sm])
     trgstats = f0class.estimate([tm])
@@ -154,7 +154,7 @@ def linear_midi_shift(srcmidi, trgmidi):
     sm[idx_s] = hz_to_cent_based_c4(sm[idx_s])
     sm[idx_s] = np.maximum(0, sm[idx_s] + shift)
     sm[idx_s] = cent_to_hz_based_c4(sm[idx_s])
-    sm[idx_s] = np.log(sm[idx_s])
+    #sm[idx_s] = np.log(sm[idx_s])
 
     return sm
 
@@ -412,8 +412,7 @@ def main():
                 ref_lft = torch.from_numpy(ref_lft).float().to(device).unsqueeze(0)
 
                 # shifted source lf0
-                #shifted_lf0 = linear_midi_shift(lf0, ref_lf0)
-                shifted_lf0 = lf0
+                shifted_lf0 = linear_midi_shift(lf0, ref_lf0)
 
                 # with reference style
                 with torch.no_grad():

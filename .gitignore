@@ -140,3 +140,6 @@ pt_models/
 
 STDIN*
 *.d00
+
+*.zip
+*.tar.gz
