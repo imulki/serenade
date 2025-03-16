@@ -6,23 +6,20 @@
 . ./path.sh || exit 1;
 . ./cmd.sh || exit 1;
 
-. /home/z44568r/miniconda3/bin/activate
-conda init bash
-conda activate _serenade
-
 # basic settings
-stage=1       # stage to start
+stage=0       # stage to start
 stop_stage=99 # stage to stop
 verbose=1      # verbosity level (lower is less info)
 n_gpus=4       # number of gpus in training
 n_jobs=2      # number of parallel jobs in feature extraction
 
 conf=conf/serenade.yaml
+cyclic_conf=conf/serenade_cyclic.yaml
 f0_path=conf/f0.yaml
 ref_dict=conf/refstyles.json
 
 # dataset configuration
-db_root=downloads
+db_root=/path/to/GTSinger
 dumpdir=dump                # directory to dump full features
 train_set=train-gtsinger
 dev_set=dev-gtsinger
@@ -34,6 +31,7 @@ tag="baseline"     # tag for directory to save model
 
 # pretrained model related
 pretrain=""           # (e.g. <path>/<to>/checkpoint-10000steps.pkl)
+cyclic_pretrain=""   # (e.g. <path>/<to>/checkpoint-10000steps.pkl)
 resume=""           # path to the checkpoint to resume from
 
 # decoding related setting
@@ -48,13 +46,16 @@ set -euo pipefail
 
 if [ ${stage} -le 0 ] && [ ${stop_stage} -ge 0 ]; then
     echo "stage 0: Data preparation"
-    for spk in ${srcspk} ${trgspk}; do
-        local/data_prep.sh \
-            --train_set "${spk}_train" \
-            --dev_set "${spk}_dev" \
-            --eval_set "${spk}_eval" \
-            "${db_root}/cmu_us_${spk}_arctic" "${spk}" data
-    done
+    python3 local/create_wav_scp.py \
+        --input_dir "${db_root}" \
+        --output_file "data/full/wav.scp"
+
+    python3 local/create_gtsinger_splits.py \
+        --wav-scp "data/full/wav.scp" \
+        --train-set "data/${train_set}/wav.scp" \
+        --dev-set "data/${dev_set}/wav.scp" \
+        --test-set "data/${test_set}/wav.scp"
+    echo "Created ${train_set}, ${dev_set}, and ${test_set} sets."
 fi
 
 if [ "${stage}" -le 1 ] && [ "${stop_stage}" -ge 1 ]; then
@@ -226,6 +227,45 @@ if [ "${stage}" -le 6 ] && [ "${stop_stage}" -ge 6 ]; then
         --train_set "${train_set}"
 fi
 
-if [ "${stage}" -le 6 ] && [ "${stop_stage}" -ge 6 ]; then
-    echo "Stage 7: SiFiGAN post-processing"
+if [ -z ${cyclic_pretrain} ]; then
+    [ -z "${checkpoint}" ] && checkpoint="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
+    cyclic_pretrain=${expdir}/${train_set}_cyclic/results/$(basename "${checkpoint}" .pkl)
+fi
+expdir=${expdir}_cyclic
+if [ "${stage}" -le 7 ] && [ "${stop_stage}" -ge 7 ]; then
+    echo "Stage 7: Network training (Cyclic Training)"
+    [ ! -e "${expdir}" ] && mkdir -p "${expdir}"
+    if [ "${n_gpus}" -gt 1 ]; then
+        train="torchrun --nnodes=1 --nproc_per_node=${n_gpus} serenade-train"
+    else
+        train="serenade-train"
+    fi
+
+    cp "${dumpdir}/${train_set}/stats.joblib" "${expdir}/stats.joblib"
+    echo "Training start. See the progress via ${expdir}/train.log."
+    ${cuda_cmd} --gpu "${n_gpus}" "${expdir}/train.log" \
+        ${train} \
+            --config "${cyclic_conf}" \
+            --train-dumpdir "${dumpdir}/${train_set}_cyclic/raw" \
+            --dev-dumpdir "${dumpdir}/${dev_set}/raw" \
+            --stats "${expdir}/stats.joblib" \
+            --outdir "${expdir}" \
+            --init-checkpoint "${cyclic_pretrain}" \
+            --resume "${resume}" \
+            --verbose "${verbose}"
+
+    echo "Successfully finished training."
+fi
+
+
+if [ "${stage}" -le 8 ] && [ "${stop_stage}" -ge 8 ]; then
+    echo "Stage 8: SiFiGAN post-processing"
+    outdir="${expdir}/results/$(basename "${checkpoint}" .pkl)"
+    sifigan-anasyn \
+        generator=sifigan \
+        in_dir="${outdir}/${test_set}" \
+        out_dir=pass \
+        stats="pt_models/postprocessing_sifigan/stats.joblib" \
+        checkpoint_path="pt_models/postprocessing_sifigan/model.pkl" \
+        f0_factors=[1.0]
 fi

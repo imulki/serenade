@@ -10,12 +10,15 @@ Using this repository and the models to impersonate any singer without their con
 
 ## Usage
 
-### Installation
-```bash
-conda create -n _serenade python=3.10
-conda activate _serenade
-pip install -e .
+### Data preprocessing
+Due to the license of the dataset, we cannot provide a script for downloading the data. Please download the data from [the project page](https://github.com/AaronZ345/GTSinger).
+
+Then, specify the path to the dataset in the `run.sh` script.
+
 ```
+db_root=/path/to/GTSinger
+```
+
 
 ### Training
 The README instructions are a work in progress. Detailed instructions will be available by Mar. 21 at the latest. 
@@ -26,6 +29,7 @@ cd egs/gtsinger/ssc1
 ```
 
 ## Pretrained Models
+Download from the Google Drive link [here]().
 
 
 ## Acknowledgements
