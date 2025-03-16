@@ -1,0 +1,6 @@
+{
+    "Breathy": "/data/group1/z44568r/toolkits2/singstyle/egs/singstyle111/vc3/dump/train-gtsingerv2/raw/dump.1/English_EN-Alto-2_Breathy_A_Thousand_Years_Breathy_Group_0000.h5",
+    "Mixed": "/data/group1/z44568r/toolkits2/singstyle/egs/singstyle111/vc3/dump/train-gtsingerv2/raw/dump.1/English_EN-Alto-2_Mixed_Voice_and_Falsetto_Hey_Jude_Mixed_Voice_Group_0000.h5",
+    "Falsetto": "/data/group1/z44568r/toolkits2/singstyle/egs/singstyle111/vc3/dump/train-gtsingerv2/raw/dump.1/English_EN-Alto-2_Mixed_Voice_and_Falsetto_Call_Me_Maybe_Falsetto_Group_0000.h5",
+    "Pharyngeal": "/data/group1/z44568r/toolkits2/singstyle/egs/singstyle111/vc3/dump/train-gtsingerv2/raw/dump.1/English_EN-Alto-2_Pharyngeal_All_of_Me_Pharyngeal_Group_0003.h5"
+}

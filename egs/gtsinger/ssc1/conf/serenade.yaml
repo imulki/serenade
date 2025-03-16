@@ -1,0 +1,88 @@
+###########################################################
+#                FEATURE EXTRACTION SETTING               #
+###########################################################
+sampling_rate: 24000     # Sampling rate.
+fft_size: 512            # FFT size.
+hop_size: 240            # Hop size.
+win_length: 480         # Window length.
+shiftms: 10
+eps: 1e-6
+                         # If set to null, it will be the same as fft_size.
+window: "hann"           # Window function.
+num_mels: 80             # Number of mel basis.
+fmin: 63                 # Minimum freq in mel basis calculation.
+fmax: 12000               # Maximum frequency in mel basis calculation.
+global_gain_scale: 1.0   # Will be multiplied to all of waveform.
+trim_silence: false      # Whether to trim the start and end of silence.
+trim_threshold_in_db: 60 # Need to tune carefully if the recording is not good.
+trim_frame_size: 2048    # Frame size in trimming.
+trim_hop_size: 512       # Hop size in trimming.
+format: "hdf5"           # Feature file format. "npy" or "hdf5" is supported.
+midi_model_file: pt_models/midi_model.pt
+
+###########################################################
+#              NETWORK ARCHITECTURE SETTING               #
+###########################################################
+model_type: Serenade
+model_params:
+    input_dim: 768
+    output_dim: 80
+    encoder_channels: 80
+    decoder_channels: 512
+    gst_embed_dim: 256
+    decoder_attention_head_dim: 512
+    mask_size: [0.1, 0.5]
+
+###########################################################
+#                  TRAINING SETTING                       #
+###########################################################
+trainer_type: SSCTrainer
+collater_type: SSCCollater
+
+vocoder:
+    checkpoint: pt_models/vocoder_gtsinger/vocoder.pkl
+    config: pt_models/vocoder_gtsinger/config.yml
+    stats: pt_models/vocoder_gtsinger/stats.h5
+
+###########################################################
+#                  DATA LOADER SETTING                    #
+###########################################################
+score_type: est_lf0_score       # Type of MIDI information used: est_lf0_score, gt_lf0_score
+logmel_type: logmel             # Whether to load the source logmel (choices: logmel, cyclic_logmel)
+batch_size: 4                   # Batch size. (For multi-gpu, this is the batch size per GPU.)
+pin_memory: true                # Whether to pin memory in Pytorch DataLoader.
+num_workers: 0                  # Number of workers in Pytorch DataLoader.
+allow_cache: false              # Whether to allow cache in dataset. If true, it requires cpu memory.
+mp: false                       # Setting this to false avoids error in multi-gpu machines.
+gradient_accumulate_steps: 1    # Number of forward steps before a backward step. Used when OOM happens.
+
+###########################################################
+#             OPTIMIZER & SCHEDULER SETTING               #
+###########################################################
+optimizer_type: AdamW
+optimizer_params:
+    lr: 0.0008             # Learning rate. See https://github.com/espnet/espnet/blob/master/espnet2/schedulers/noam_lr.py#L49-L50
+grad_norm: 1.0              # Gradient norm.
+scheduler_type: MultiStepLR
+scheduler_params:
+    gamma: 0.5
+    milestones:
+        - 100000
+        - 200000
+        - 300000
+
+###########################################################
+#                    INTERVAL SETTING                     #
+###########################################################
+train_max_steps: 400000                  # Number of training steps.
+save_interval_steps: 25000               # Interval steps to save checkpoint.
+eval_interval_steps: 25000                # Interval steps to evaluate the network.
+train_max_steps: 100                  # Number of training steps.
+save_interval_steps: 100               # Interval steps to save checkpoint.
+eval_interval_steps: 100                # Interval steps to evaluate the network.
+log_interval_steps: 1000                # Interval steps to evaluate the network.
+
+###########################################################
+#                     OTHER SETTING                       #
+###########################################################
+num_save_intermediate_results: 8  # Number of results to be saved as intermediate results.

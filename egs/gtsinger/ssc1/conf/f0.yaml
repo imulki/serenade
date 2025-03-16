@@ -1,0 +1,12 @@
+Soprano:
+    minf0: 261
+    maxf0: 1046
+Alto:
+    minf0: 196
+    maxf0: 700
+Tenor:
+    minf0: 130
+    maxf0: 440
+Bass:
+    minf0: 82
+    maxf0: 330
