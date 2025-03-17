@@ -3,10 +3,13 @@
 ## Before you use this repo and pretrained models
 
 ### License
-Commercial use is NOT allowed. Please read the [LICENSE](LICENSE) file. This repo and the models are licensed under the [Creative Commons Attribution-NonCommercial 4.0 International License (CC BY-NC 4.0)](https://creativecommons.org/licenses/by-nc/4.0/).
+Commercial use is NOT allowed. Please read the [LICENSE](LICENSE) file. This repo and the models are licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License (CC BY-NC-SA 4.0)](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
 ### Conditions
 Using this repository and the models to impersonate any singer without their consent is strictly PROHIBITED. Please use this repo and the pretrained models responsibly.
+
+## News and updates
+- [Mar. 16] Initial commit.
 
 ## Usage
 
@@ -17,15 +20,21 @@ conda activate _serenade
 pip install -e .
 ```
 
-### Training
+SiFiGAN is also necessary to run the recipe. A forked version of SiFiGAN is used to post-process the files.
+```bash
+git clone https://github.com/lesterphillip/SiFiGAN.git
+cd SiFiGAN
+pip install -e .
+```
+
+### Recipes
 The README instructions are a work in progress. Detailed instructions will be available by Mar. 21 at the latest. 
 
+A recipe for training a model (with pretrained models) is provided. Please refer to the README file in the recipe directory for more details.
 ```
 cd egs/gtsinger/ssc1
 ./run.sh
 ```
-
-## Pretrained Models
 
 
 ## Acknowledgements

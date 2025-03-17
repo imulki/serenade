@@ -8,7 +8,29 @@ Commercial use is NOT allowed. Please read the [LICENSE](LICENSE) file. This rep
 ### Conditions
 Using this repository and the models to impersonate any singer without their consent is strictly PROHIBITED. Please use this repo and the pretrained models responsibly.
 
+## Recipe structure
+### Recipe overview
+The training recipe consists of three main parts:
+
+1. Initial model training
+   - Stage 0: Data preparation, creation of train/dev/test wav.scp files
+   - Stage 1: Data processing 
+   - Stage 2: Dataset statistics calculation
+   - Stage 3: Model training
+   - Stage 4: Model inference
+
+2. Cyclic training
+   - Stage 5: Creation of converted training data, reference styles are randomly selected from the `dump` directory.
+   - Stage 6: Feature extraction of converted training data 
+   - Stage 7: Cyclic training, initialized from initial model
+
+3. Vocoder post-processing
+   - Stage 8: SiFiGAN post-processing
+
 ## Usage
+
+### Other necessary files
+- `conf/refstyles.json`: Reference styles for the conversion, you can manually set reference styles from the `dump` directory.
 
 ### Data preprocessing
 Due to the license of the dataset, we cannot provide a script for downloading the data. Please download the data from [the project page](https://github.com/AaronZ345/GTSinger).
