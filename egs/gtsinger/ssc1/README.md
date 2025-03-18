@@ -36,7 +36,7 @@ Download from the Google Drive link [here](https://drive.google.com/file/d/1ZhJg
 
 You can also use the script below.
 ```bash
-./utils/download_from_google_drive.sh https://drive.google.com/open?id=1ZhJgLHzwduELL2rzleOGDxLu4ivJ6ss- .
+./utils/download_from_google_drive.sh https://drive.google.com/open?id=1ZhJgLHzwduELL2rzleOGDxLu4ivJ6ss- . "tar.gz"
 ```
 
 #### Inference
