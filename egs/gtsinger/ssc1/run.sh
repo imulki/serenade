@@ -236,6 +236,7 @@ if [ -z ${cyclic_pretrain} ]; then
     cyclic_pretrain=${checkpoint}
 fi
 expdir=${expdir}_cyclic
+
 if [ "${stage}" -le 7 ] && [ "${stop_stage}" -ge 7 ]; then
     echo "Stage 7: Network training (Cyclic Training)"
     [ ! -e "${expdir}" ] && mkdir -p "${expdir}"
@@ -261,9 +262,41 @@ if [ "${stage}" -le 7 ] && [ "${stop_stage}" -ge 7 ]; then
     echo "Successfully finished training."
 fi
 
-
 if [ "${stage}" -le 8 ] && [ "${stop_stage}" -ge 8 ]; then
-    echo "Stage 8: SiFiGAN post-processing"
+    echo "Stage 8: Network decoding"
+    # shellcheck disable=SC2012
+    [ -z "${checkpoint}" ] && checkpoint="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
+    if [ -z "${checkpoint}" ]; then
+        outdir="$(dirname "${checkpoint}")/results/$(basename "${checkpoint}" .pkl)"
+    else
+        outdir="${expdir}/results/$(basename "${checkpoint}" .pkl)"
+    fi
+    pids=()
+    for name in "${dev_set}" "${test_set}"; do
+    (
+        [ ! -e "${outdir}/${name}" ] && mkdir -p "${outdir}/${name}"
+        [ "${n_gpus}" -gt 1 ] && n_gpus=1
+        echo "Decoding start. See the progress via ${outdir}/${name}/decode.*.log."
+        CUDA_VISIBLE_DEVICES="" ${cuda_cmd} JOB=1:${n_jobs} --gpu 0 "${outdir}/${name}/decode.JOB.log" \
+            serenade-decode \
+                --dumpdir "${dumpdir}/${name}/raw/dump.JOB" \
+                --checkpoint "${checkpoint}" \
+                --stats "${expdir}/stats.joblib" \
+                --ref-dict "${ref_dict}" \
+                --outdir "${outdir}/${name}/out.JOB" \
+                --verbose "${verbose}"
+        echo "Successfully finished decoding of ${name} set."
+    ) &
+    pids+=($!) # store background pids
+    done
+    i=0; for pid in "${pids[@]}"; do wait ${pid} || ((i++)); done
+    [ ${i} -gt 0 ] && echo "$0: ${i} background jobs are failed." && false
+    echo "Successfully finished decoding."
+fi
+
+
+if [ "${stage}" -le 9 ] && [ "${stop_stage}" -ge 9 ]; then
+    echo "Stage 9: SiFiGAN post-processing"
     outdir="${expdir}/results/$(basename "${checkpoint}" .pkl)"
     sifigan-anasyn \
         generator=sifigan \
