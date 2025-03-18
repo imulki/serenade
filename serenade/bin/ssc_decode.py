@@ -130,14 +130,10 @@ def cent_to_hz_based_c4(cent):
     return out
 
 
-def linear_midi_shift(srcmidi, trgmidi):
+def linear_midi_shift(sm, tm):
     f0class = F0Statistics()
-    sm = np.zeros_like(srcmidi)
-    tm = np.zeros_like(trgmidi)
-    idx_s = srcmidi > 0
-    idx_t = trgmidi > 0
-    #sm[idx_s] = np.exp(srcmidi[idx_s])
-    #tm[idx_t] = np.exp(trgmidi[idx_t])
+    idx_s = sm > 0
+    idx_t = tm > 0
 
     srcstats = f0class.estimate([sm])
     trgstats = f0class.estimate([tm])
@@ -154,7 +150,6 @@ def linear_midi_shift(srcmidi, trgmidi):
     sm[idx_s] = hz_to_cent_based_c4(sm[idx_s])
     sm[idx_s] = np.maximum(0, sm[idx_s] + shift)
     sm[idx_s] = cent_to_hz_based_c4(sm[idx_s])
-    #sm[idx_s] = np.log(sm[idx_s])
 
     return sm
 
@@ -389,7 +384,7 @@ def main():
                 ref_lft = read_hdf5(ref_h5path, "loud")
                 ref_wave = read_hdf5(ref_h5path, "wave")
                 ref_score = read_hdf5(ref_h5path, "est_lf0_score")
-                ref_lf0 = read_hdf5(ref_h5path, "lf0")
+                ref_lf0 = read_hdf5(ref_h5path, "f0")
 
                 sf.write(
                     os.path.join(args.outdir, f"00_{style}_reference.wav"),

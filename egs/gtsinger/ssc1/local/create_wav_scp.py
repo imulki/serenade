@@ -25,26 +25,26 @@ def create_wav_scp(directory, output_file):
     os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
     with open(output_file, 'w') as wav_scp:
-        for root, _, files in os.walk(directory):
-            for file in files:
-                if "_reference" in file:
-                    continue    
+        # Get all wav files using glob
+        wav_files = glob.glob(os.path.join(directory, "**/*.wav"), recursive=True)
+        
+        for file_path in wav_files:
+            if "_reference" in file_path:
+                continue
+                
+            # Get absolute path
+            file_path = os.path.abspath(file_path)
+            
+            # Create utt_id by converting relative path to underscores
+            relative_path = os.path.relpath(file_path, directory)
+            utt_id = relative_path.replace(os.sep, "_").replace(".wav", "")
+            utt_id = utt_id.replace("　", "_") 
+            utt_id = utt_id.replace(" ", "_")
 
-                if file.endswith(".wav"):
-                    # Get absolute path of the .flac file
-                    file_path = os.path.abspath(os.path.join(root, file))
-
-                    # Create utt_id by converting relative path to underscores
-                    relative_path = os.path.relpath(file_path, directory)
-                    utt_id = relative_path.replace(os.sep, "_").replace(".wav", "")
-                    utt_id = utt_id.replace("　", "_")
-                    utt_id = utt_id.replace(' ', '_')
-
-                    if "out." in utt_id:
-                        utt_id = "_".join(utt_id.split("_")[1:])
-
-                    wav_scp.write(f"{utt_id} {file_path}\n")
-
+            if "out." in utt_id:
+                utt_id = "_".join(utt_id.split("_")[1:])
+            
+            wav_scp.write(f"{utt_id} {file_path}\n")
     print(f"wav.scp file has been created at {output_file}")
 
 

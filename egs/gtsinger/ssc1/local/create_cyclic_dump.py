@@ -16,9 +16,6 @@ def create_cyclic_dump(outdir, dumpdir, train_set):
     with open(os.path.join(outdir, "cyclic.log"), "w") as f:
         for h5_path in tqdm(h5_paths):
             f.write(f"Processing {h5_path}\n")
-            cyclic_logmel = read_hdf5(h5_path, "cyclic_logmel")
-            if cyclic_logmel is not None:
-                continue
 
             orig_logmel = read_hdf5(h5_path, "logmel")
             style = h5_path.split("/")[-1].split("_")[-1][:-3]
@@ -28,8 +25,6 @@ def create_cyclic_dump(outdir, dumpdir, train_set):
                 if style == "Voice":
                     style = "Mixed_Voice"
                 src_h5_basename = os.path.basename(h5_path).replace(f"_{style}", "")
-                src_h5_basename = "_".join(src_h5_basename.split("_")[:-1])
-                src_h5_basename = src_h5_basename + ".h5"
 
                 # finds the source file in the source dump directory
                 src_h5_path = os.path.join(f"{dumpdir}/{train_set}/raw/dump.1", src_h5_basename)
@@ -38,11 +33,9 @@ def create_cyclic_dump(outdir, dumpdir, train_set):
 
                 # get original logmel, rename it as cyclic_logmel
                 cyclic_logmel = read_hdf5(src_h5_path, "logmel")
-
             else:
                 # reconstruction of unconverted samples
                 cyclic_logmel = orig_logmel
-                continue
 
             # save as cyclic_logmel for targets during training
             if cyclic_logmel is None:

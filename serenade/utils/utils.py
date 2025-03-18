@@ -61,12 +61,12 @@ def read_hdf5(hdf5_name, hdf5_path):
 
     # TODO: restore logging
     if not os.path.exists(hdf5_name):
-        #logging.error(f"There is no such a hdf5 file ({hdf5_name}).")
+        logging.error(f"There is no such a hdf5 file ({hdf5_name}).")
         return None
     hdf5_file = h5py.File(hdf5_name, "r")
 
     if hdf5_path not in hdf5_file:
-        #logging.error(f"There is no such a data in hdf5 file. ({hdf5_path})")
+        logging.error(f"There is no such a data in hdf5 file. ({hdf5_path})")
         return None
 
     hdf5_data = hdf5_file[hdf5_path][()]

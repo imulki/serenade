@@ -6,6 +6,10 @@
 . ./path.sh || exit 1;
 . ./cmd.sh || exit 1;
 
+. /home/z44568r/miniconda3/bin/activate
+conda init bash
+conda activate _serenadeenv
+
 # basic settings
 stage=0       # stage to start
 stop_stage=99 # stage to stop
@@ -25,7 +29,6 @@ train_set=train-gtsinger
 dev_set=dev-gtsinger
 test_set=test-gtsinger
 
-
 # training related setting
 tag="baseline"     # tag for directory to save model
 
@@ -35,9 +38,10 @@ cyclic_pretrain=""   # (e.g. <path>/<to>/checkpoint-10000steps.pkl)
 resume=""           # path to the checkpoint to resume from
 
 # decoding related setting
-checkpoint="exp/train-gtsinger-cyclic_v9_proposed_cyclic_fix/checkpoint-200000steps.pkl"               # checkpoint path to be used for decoding
+checkpoint="pt_models/train-gtsinger-cyclic-sifigan/checkpoint-200000steps.pkl"               # checkpoint path to be used for decoding
                             # if not provided, the latest one will be used
                             # (e.g. <path>/<to>/checkpoint-400000steps.pkl)
+checkpoint=""
                                        
 # shellcheck disable=SC1091
 . utils/parse_options.sh || exit 1;
@@ -187,10 +191,10 @@ if [ "${stage}" -le 5 ] && [ "${stop_stage}" -ge 5 ]; then
     echo "Successfully finished decoding."
 fi
 
-
 if [ "${stage}" -le 6 ] && [ "${stop_stage}" -ge 6 ]; then
     echo "Stage 6: Feature extraction (cyclic fine-tuning)"
     # create new wav.scp for cyclic fine-tuning
+    [ -z "${checkpoint}" ] && checkpoint="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
     outdir="${expdir}/results/$(basename "${checkpoint}" .pkl)"
     python3 local/create_wav_scp.py \
         --input_dir "${outdir}/${train_set}" \
@@ -229,7 +233,7 @@ fi
 
 if [ -z ${cyclic_pretrain} ]; then
     [ -z "${checkpoint}" ] && checkpoint="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
-    cyclic_pretrain=${expdir}/${train_set}_cyclic/results/$(basename "${checkpoint}" .pkl)
+    cyclic_pretrain=${checkpoint}
 fi
 expdir=${expdir}_cyclic
 if [ "${stage}" -le 7 ] && [ "${stop_stage}" -ge 7 ]; then
@@ -264,7 +268,7 @@ if [ "${stage}" -le 8 ] && [ "${stop_stage}" -ge 8 ]; then
     sifigan-anasyn \
         generator=sifigan \
         in_dir="${outdir}/${test_set}" \
-        out_dir=pass \
+        out_dir=exp \
         stats="pt_models/postprocessing_sifigan/stats.joblib" \
         checkpoint_path="pt_models/postprocessing_sifigan/model.pkl" \
         f0_factors=[1.0]
