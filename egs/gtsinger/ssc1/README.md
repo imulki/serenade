@@ -30,30 +30,13 @@ The training recipe consists of three main parts:
 
 ## Usage
 
-### Quick start
-#### Pretrained Models
+### Pretrained Models
 Download from the Google Drive link [here](https://drive.google.com/file/d/1ZhJgLHzwduELL2rzleOGDxLu4ivJ6ss-/view?usp=sharing). Then, unzip and place the directory in the `egs/gtsinger/ssc1` directory.
 
 You can also use the script below.
 ```bash
 ./utils/download_from_google_drive.sh https://drive.google.com/open?id=1ZhJgLHzwduELL2rzleOGDxLu4ivJ6ss- . "tar.gz"
 ```
-
-#### Inference
-Run the inference script with the pretrained model.
-
-```bash
-./run.sh --stage 8 --checkpoint pt_models/train-gtsigner-cyclic-sifigan/checkpoint-200000steps.pkl
-```
-
-Results will be saved in `pt_models/train-gtsigner-cyclic-sifigan/results/checkpoint-200000steps`.
-
-
-### Other necessary files
-- `conf/refstyles.json`: Reference styles for the conversion, you can manually set reference styles from the `dump` directory.
-- `conf/serenade.yaml`: Configuration for initial model training.
-- `conf/serenade_cyclic.yaml`: Configuration for cyclic training.
-
 
 ### Data preprocessing
 Due to the license of the dataset, we cannot provide a script for downloading the data. Please download the data from [the project page](https://github.com/AaronZ345/GTSinger).
@@ -64,12 +47,40 @@ Then, specify the path to the dataset in the `run.sh` script.
 db_root=/path/to/GTSinger
 ```
 
+### Recipe execution
+
+Run the recipe from the start.
+```bash
+./run.sh --stage 0 --tag exp1
+```
+
+### Other necessary files
+- `conf/refstyles.json`: Reference styles for the conversion, you can manually set reference styles from the `dump` directory.
+- `conf/serenade.yaml`: Configuration for initial model training.
+- `conf/serenade_cyclic.yaml`: Configuration for cyclic training.
+
+
 ### Training
 The README instructions are a work in progress. Detailed instructions will be available by Mar. 21 at the latest. 
 
 ```bash
 cd egs/gtsinger/ssc1
 ./run.sh
+```
+
+### Inference
+Run the inference script with the pretrained model.
+
+```bash
+./run.sh --stage 8 --checkpoint pt_models/train-gtsigner-cyclic-sifigan/checkpoint-200000steps.pkl
+```
+
+Results will be saved in `pt_models/train-gtsigner-cyclic-sifigan/results/checkpoint-200000steps`.
+
+Or, run the inference script with the latest checkpoint.
+
+```bash
+./run.sh --stage 8 --tag exp1
 ```
 
 ### Using your own data
