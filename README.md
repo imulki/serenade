@@ -9,6 +9,7 @@ Commercial use is NOT allowed. Please read the [LICENSE](LICENSE) file. This rep
 Using this repository and the models to impersonate any singer without their consent is strictly PROHIBITED. Please use this repo and the pretrained models responsibly.
 
 ## News and updates
+- [Mar. 18] ArXiv paper [here](https://arxiv.org/abs/2503.12388) and demo page [here](https://lesterphillip.github.io/serenade_demo/).
 - [Mar. 16] Initial commit.
 
 ## Usage
@@ -47,6 +48,20 @@ cd egs/gtsinger/ssc1
 
 ## Questions?
 Please use the issues section to ask questions about the repo so that others can benefit from the answers.
+
+## Citation
+Please cite the ArXiv paper if you use this repo or the pretrained models.
+```bibtex
+@article{violeta2025serenade,
+      title={{Serenade: A Singing Style Conversion Framework Based On Audio Infilling}}, 
+      author={Lester Phillip Violeta and Wen-Chin Huang and Tomoki Toda},
+      year={2025},
+      eprint={2503.12388},
+      archivePrefix={arXiv},
+      primaryClass={cs.SD},
+      url={https://arxiv.org/abs/2503.12388}, 
+}
+```
 
 ## Author and Developer
 **Lester Phillip Violeta**  
