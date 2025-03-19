@@ -69,9 +69,11 @@ Note that the default settings use 4 GPUs for training, with an effective batch 
 
 
 ### Inference
-Run the inference script with the pretrained model.
+Run the inference script with the pretrained model. This is highly recommended before running the training-related scripts.
+Make sure that you have at least ran the recipe up to Stage 1.
 
 ```bash
+./run.sh --stage 0 --stop_stage 1 --skip_extract_train
 ./run.sh --stage 8 --checkpoint pt_models/train-gtsinger-cyclic-sifigan/checkpoint-200000steps.pkl
 ```
 Results will be saved in `pt_models/train-gtsinger-cyclic-sifigan/results/checkpoint-200000steps`.

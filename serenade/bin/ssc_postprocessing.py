@@ -106,6 +106,7 @@ def main(config: DictConfig) -> None:
         signal_types=config.signal_types,
     )
 
+    logger.info(f"Processing {config.in_dir}")
     wav_paths = glob.glob(os.path.join(config.in_dir, "**", "*.wav"), recursive=True)
     wav_paths = [path for path in wav_paths if "_reference" not in path and "_gt" not in path]
 

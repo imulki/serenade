@@ -24,7 +24,7 @@ dumpdir=dump                # directory to dump full features
 train_set=train-gtsinger
 dev_set=dev-gtsinger
 test_set=test-gtsinger
-
+skip_extract_train=False
 # training related setting
 tag="baseline"     # tag for directory to save model
 
@@ -63,6 +63,9 @@ if [ "${stage}" -le 1 ] && [ "${stop_stage}" -ge 1 ]; then
     # extract raw features
     pids=()
     for name in "${train_set}" "${dev_set}" "${test_set}"; do
+        if [ "${name}" = "${train_set}" ] && [ "${skip_extract_train}" = "True" ]; then
+            continue
+        fi
     (
         [ ! -e "${dumpdir}/${name}/raw" ] && mkdir -p "${dumpdir}/${name}/raw"
         echo "Feature extraction start. See the progress via ${dumpdir}/${name}/raw/preprocessing.*.log."
@@ -291,7 +294,12 @@ fi
 
 if [ "${stage}" -le 9 ] && [ "${stop_stage}" -ge 9 ]; then
     echo "Stage 9: SiFiGAN post-processing"
-    outdir="${expdir}/results/$(basename "${checkpoint}" .pkl)"
+    [ -z "${checkpoint}" ] && checkpoint="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
+    if [ -z "${checkpoint}" ]; then
+        outdir="${expdir}/results/$(basename "${checkpoint}" .pkl)"
+    else
+        outdir="$(dirname "${checkpoint}")/results/$(basename "${checkpoint}" .pkl)"
+    fi
     serenade-postprocessing \
         generator=sifigan \
         in_dir="${outdir}/${test_set}" \

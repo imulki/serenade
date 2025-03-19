@@ -19,13 +19,7 @@ Using this repository and the models to impersonate any singer without their con
 conda create -n _serenade python=3.10
 conda activate _serenade
 pip install -e .
-```
-
-SiFiGAN is also necessary to run the recipe. A forked version of SiFiGAN is used to post-process the files.
-```bash
-git clone https://github.com/lesterphillip/SiFiGAN.git
-cd SiFiGAN
-pip install -e .
+pip install git+https://github.com/chomeyama/SiFiGAN@main
 ```
 
 ### Recipes
