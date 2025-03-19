@@ -19,7 +19,7 @@ f0_path=conf/f0.yaml
 ref_dict=conf/refstyles.json
 
 # dataset configuration
-db_root=/path/to/GTSinger   # path to the GTSinger dataset
+db_root=downloads/GTSinger   # path to the GTSinger dataset
 dumpdir=dump                # directory to dump full features
 train_set=train-gtsinger
 dev_set=dev-gtsinger
@@ -45,6 +45,7 @@ set -euo pipefail
 
 if [ ${stage} -le 0 ] && [ ${stop_stage} -ge 0 ]; then
     echo "stage 0: Data preparation"
+    ./local/download_gtsinger.sh "${db_root}"
     python3 local/create_wav_scp.py \
         --input_dir "${db_root}" \
         --output_file "data/full/wav.scp"

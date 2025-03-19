@@ -35,19 +35,17 @@ You can run the recipe from each stage.
 ### Pretrained Models
 Download from the Google Drive link [here](https://drive.google.com/file/d/1ZhJgLHzwduELL2rzleOGDxLu4ivJ6ss-/view?usp=sharing). Then, unzip and place the directory in the `egs/gtsinger/ssc1` directory.
 
-You can also use the script below.
+You can also use the script below to automatically download and unzip the pretrained models.
 ```bash
 ./utils/download_from_google_drive.sh https://drive.google.com/open?id=1ZhJgLHzwduELL2rzleOGDxLu4ivJ6ss- . "tar.gz"
 ```
 
 ### Data preprocessing
-Due to the license of the dataset, we cannot provide a script for downloading the data. Please download the data from [the project page](https://github.com/AaronZ345/GTSinger).
-
-Then, specify the path to the dataset in the `run.sh` script.
-
+Please download the data from [the GTSinger project page](https://github.com/AaronZ345/GTSinger) and set the dataset path as `db_root`.
 ```
 db_root=/path/to/GTSinger
 ```
+You can also use the recipe directly to download the data from the GTSinger Google Drive in `db_root`. 
 
 ### Recipe execution
 
@@ -86,6 +84,7 @@ Or, run the inference script with your latest trained checkpoint.
 
 ### Using your own data
 The preprocessing steps are tailored for the GTSinger dataset and thus the score labels are extracted. In cases where you use your own data, you can skip the extraction of the ground truth score labels by setting the `--skip-gtmidi` flag to `True`. (Refer to Stage 6)
+Note that the paper also used a large-scale singing dataset for training. Due to the license of the other datasets, we cannot provide an automatic download script.
 
 ## Acknowledgements
 - [ParallelWaveGAN](https://github.com/kan-bayashi/ParallelWaveGAN/) (Repository skeleton)
