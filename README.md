@@ -29,8 +29,6 @@ pip install -e .
 ```
 
 ### Recipes
-The README instructions are a work in progress. Detailed instructions will be available by Mar. 21 at the latest. 
-
 A recipe for training a model (with pretrained models) is provided. Please refer to the README file in the recipe directory for more details.
 ```
 cd egs/gtsinger/ssc1
@@ -39,12 +37,14 @@ cd egs/gtsinger/ssc1
 
 
 ## Acknowledgements
-- [ESPNet](https://github.com/espnet/espnet)
-- [ParallelWaveGAN](https://github.com/kan-bayashi/ParallelWaveGAN/)
-- [NNSVS](https://github.com/nnsvs/nnsvs)
-- [seq2seq-vc](https://github.com/unilight/seq2seq-vc)
-- [Matcha-TTS](https://github.com/shivammehta25/Matcha-TTS)
-- [Phoneme-MIDI](https://github.com/seyong92/phoneme-informed-note-level-singing-transcription)
+- [ParallelWaveGAN](https://github.com/kan-bayashi/ParallelWaveGAN/) (Repository skeleton)
+- [seq2seq-vc](https://github.com/unilight/seq2seq-vc) (Repository skeleton and utils)
+- [ESPNet](https://github.com/espnet/espnet) (GST encoder)
+- [NNSVS](https://github.com/nnsvs/nnsvs) (Preprocessing, Linear MIDI shift)
+- [Matcha-TTS](https://github.com/shivammehta25/Matcha-TTS) (1D UNet architecture)
+- [Sprocket](https://github.com/k2kobayashi/sprocket) (F0 analysis)
+- [Phoneme-MIDI](https://github.com/seyong92/phoneme-informed-note-level-singing-transcription) (Audio MIDI extraction, pretrained models)
+- [SiFiGAN](https://github.com/chomeyama/SiFiGAN) (Analysis and synthesis code, pretrained models)
 
 ## Questions?
 Please use the issues section to ask questions about the repo so that others can benefit from the answers.

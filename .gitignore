@@ -143,3 +143,4 @@ STDIN*
 
 *.zip
 *.tar.gz
+*pjsub*

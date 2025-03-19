@@ -28,6 +28,8 @@ The training recipe consists of three main parts:
 3. Vocoder post-processing
    - Stage 9: SiFiGAN post-processing
 
+You can run the recipe from each stage.
+
 ## Usage
 
 ### Pretrained Models
@@ -54,45 +56,45 @@ Run the recipe from the start.
 ./run.sh --stage 0 --tag exp1
 ```
 
+If you only have 1 GPU, you can set the number of GPUs to 1.
+```bash
+./run.sh --stage 0 --tag exp1 --n_gpus 1
+```
+Note that the default settings use 4 GPUs for training, with an effective batch size of 16. You need to change the batch size in the `conf/serenade.yaml` file if you use 1 GPU.
+
 ### Other necessary files
 - `conf/refstyles.json`: Reference styles for the conversion, you can manually set reference styles from the `dump` directory.
 - `conf/serenade.yaml`: Configuration for initial model training.
 - `conf/serenade_cyclic.yaml`: Configuration for cyclic training.
 
 
-### Training
-The README instructions are a work in progress. Detailed instructions will be available by Mar. 21 at the latest. 
-
-```bash
-cd egs/gtsinger/ssc1
-./run.sh
-```
-
 ### Inference
 Run the inference script with the pretrained model.
 
 ```bash
-./run.sh --stage 8 --checkpoint pt_models/train-gtsigner-cyclic-sifigan/checkpoint-200000steps.pkl
+./run.sh --stage 8 --checkpoint pt_models/train-gtsinger-cyclic-sifigan/checkpoint-200000steps.pkl
 ```
+Results will be saved in `pt_models/train-gtsinger-cyclic-sifigan/results/checkpoint-200000steps`.
 
-Results will be saved in `pt_models/train-gtsigner-cyclic-sifigan/results/checkpoint-200000steps`.
-
-Or, run the inference script with the latest checkpoint.
+Or, run the inference script with your latest trained checkpoint.
 
 ```bash
 ./run.sh --stage 8 --tag exp1
 ```
 
 ### Using your own data
-The preprocessing steps are tailored for the GTSinger dataset. You can skip the extraction of the ground truth score labels by setting the `--skip-gtmidi` flag to `True`. (Refer to Stage 6)
+The preprocessing steps are tailored for the GTSinger dataset and thus the score labels are extracted. In cases where you use your own data, you can skip the extraction of the ground truth score labels by setting the `--skip-gtmidi` flag to `True`. (Refer to Stage 6)
 
 ## Acknowledgements
-- [ESPNet](https://github.com/espnet/espnet)
-- [ParallelWaveGAN](https://github.com/kan-bayashi/ParallelWaveGAN/)
-- [NNSVS](https://github.com/nnsvs/nnsvs)
-- [seq2seq-vc](https://github.com/unilight/seq2seq-vc)
-- [Matcha-TTS](https://github.com/shivammehta25/Matcha-TTS)
-- [Phoneme-MIDI](https://github.com/seyong92/phoneme-informed-note-level-singing-transcription)
+- [ParallelWaveGAN](https://github.com/kan-bayashi/ParallelWaveGAN/) (Repository skeleton)
+- [seq2seq-vc](https://github.com/unilight/seq2seq-vc) (Repository skeleton and utils)
+- [ESPNet](https://github.com/espnet/espnet) (GST encoder)
+- [NNSVS](https://github.com/nnsvs/nnsvs) (Preprocessing, Linear MIDI shift)
+- [Matcha-TTS](https://github.com/shivammehta25/Matcha-TTS) (1D UNet architecture)
+- [Sprocket](https://github.com/k2kobayashi/sprocket) (F0 analysis)
+- [Phoneme-MIDI](https://github.com/seyong92/phoneme-informed-note-level-singing-transcription) (Audio MIDI extraction, pretrained models)
+- [SiFiGAN](https://github.com/chomeyama/SiFiGAN) (Analysis and synthesis code, pretrained models)
+
 
 ## Questions?
 Please use the issues section to ask questions about the repo so that others can benefit from the answers.

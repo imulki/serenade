@@ -6,16 +6,12 @@
 . ./path.sh || exit 1;
 . ./cmd.sh || exit 1;
 
-. /home/z44568r/miniconda3/bin/activate
-conda init bash
-conda activate _serenadeenv
-
 # basic settings
-stage=0       # stage to start
-stop_stage=99 # stage to stop
+stage=0        # stage to start
+stop_stage=99  # stage to stop
 verbose=1      # verbosity level (lower is less info)
 n_gpus=4       # number of gpus in training
-n_jobs=2      # number of parallel jobs in feature extraction
+n_jobs=2       # do NOT change unless you understand the code, number of parallel jobs in feature extraction
 
 conf=conf/serenade.yaml
 cyclic_conf=conf/serenade_cyclic.yaml
@@ -23,7 +19,7 @@ f0_path=conf/f0.yaml
 ref_dict=conf/refstyles.json
 
 # dataset configuration
-db_root=/path/to/GTSinger
+db_root=/path/to/GTSinger   # path to the GTSinger dataset
 dumpdir=dump                # directory to dump full features
 train_set=train-gtsinger
 dev_set=dev-gtsinger
@@ -38,10 +34,9 @@ cyclic_pretrain=""   # (e.g. <path>/<to>/checkpoint-10000steps.pkl)
 resume=""           # path to the checkpoint to resume from
 
 # decoding related setting
-checkpoint="pt_models/train-gtsinger-cyclic-sifigan/checkpoint-200000steps.pkl"               # checkpoint path to be used for decoding
+checkpoint=""               # checkpoint path to be used for decoding
                             # if not provided, the latest one will be used
                             # (e.g. <path>/<to>/checkpoint-400000steps.pkl)
-checkpoint=""
                                        
 # shellcheck disable=SC1091
 . utils/parse_options.sh || exit 1;
@@ -102,7 +97,6 @@ if [ "${stage}" -le 2 ] && [ "${stop_stage}" -ge 2 ]; then
             --verbose "${verbose}"
 fi
 
-
 if [ -z ${tag} ]; then
     expname=${train_set}_$(basename ${conf%.*})
 else
@@ -146,7 +140,7 @@ if [ "${stage}" -le 4 ] && [ "${stop_stage}" -ge 4 ]; then
         [ ! -e "${outdir}/${name}" ] && mkdir -p "${outdir}/${name}"
         [ "${n_gpus}" -gt 1 ] && n_gpus=1
         echo "Decoding start. See the progress via ${outdir}/${name}/decode.*.log."
-        CUDA_VISIBLE_DEVICES="" ${cuda_cmd} JOB=1:${n_jobs} --gpu 0 "${outdir}/${name}/decode.JOB.log" \
+        ${cuda_cmd} JOB=1:${n_jobs} --gpu 1 "${outdir}/${name}/decode.JOB.log" \
             serenade-decode \
                 --dumpdir "${dumpdir}/${name}/raw/dump.JOB" \
                 --checkpoint "${checkpoint}" \
@@ -175,7 +169,7 @@ if [ "${stage}" -le 5 ] && [ "${stop_stage}" -ge 5 ]; then
         [ ! -e "${outdir}/${name}" ] && mkdir -p "${outdir}/${name}"
         [ "${n_gpus}" -gt 1 ] && n_gpus=1
         echo "Decoding start. See the progress via ${outdir}/${name}/decode.*.log."
-        CUDA_VISIBLE_DEVICES="" ${cuda_cmd} JOB=1:${n_jobs} --gpu 0 "${outdir}/${name}/decode.JOB.log" \
+        ${cuda_cmd} JOB=1:${n_jobs} --gpu 1 "${outdir}/${name}/decode.JOB.log" \
             serenade-decode \
                 --dumpdir "${dumpdir}/${name}/raw/dump.JOB" \
                 --checkpoint "${checkpoint}" \
@@ -267,9 +261,9 @@ if [ "${stage}" -le 8 ] && [ "${stop_stage}" -ge 8 ]; then
     # shellcheck disable=SC2012
     [ -z "${checkpoint}" ] && checkpoint="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
     if [ -z "${checkpoint}" ]; then
-        outdir="$(dirname "${checkpoint}")/results/$(basename "${checkpoint}" .pkl)"
-    else
         outdir="${expdir}/results/$(basename "${checkpoint}" .pkl)"
+    else
+        outdir="$(dirname "${checkpoint}")/results/$(basename "${checkpoint}" .pkl)"
     fi
     pids=()
     for name in "${dev_set}" "${test_set}"; do
@@ -277,7 +271,7 @@ if [ "${stage}" -le 8 ] && [ "${stop_stage}" -ge 8 ]; then
         [ ! -e "${outdir}/${name}" ] && mkdir -p "${outdir}/${name}"
         [ "${n_gpus}" -gt 1 ] && n_gpus=1
         echo "Decoding start. See the progress via ${outdir}/${name}/decode.*.log."
-        CUDA_VISIBLE_DEVICES="" ${cuda_cmd} JOB=1:${n_jobs} --gpu 0 "${outdir}/${name}/decode.JOB.log" \
+        ${cuda_cmd} JOB=1:${n_jobs} --gpu 1 "${outdir}/${name}/decode.JOB.log" \
             serenade-decode \
                 --dumpdir "${dumpdir}/${name}/raw/dump.JOB" \
                 --checkpoint "${checkpoint}" \
