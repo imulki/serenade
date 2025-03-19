@@ -30,6 +30,7 @@ from tqdm import tqdm
 _c4_hz = 440 * 2 ** (3 / 12 - 1)
 _c4_cent = 4800
 
+
 class F0Statistics(object):
     """F0 statistics class
     Estimate F0 statistics and convert F0
@@ -140,14 +141,14 @@ def linear_midi_shift(srcmidi, trgmidi):
     srcstats = f0class.estimate([sm])
     trgstats = f0class.estimate([tm])
 
-    src_mean_cent = 1200 * np.log(np.exp(srcstats[0]) / _c4_hz) / np.log(2) +_c4_cent
-    tgt_mean_cent = 1200 * np.log(np.exp(trgstats[0]) / _c4_hz) / np.log(2) +_c4_cent
+    src_mean_cent = 1200 * np.log(np.exp(srcstats[0]) / _c4_hz) / np.log(2) + _c4_cent
+    tgt_mean_cent = 1200 * np.log(np.exp(trgstats[0]) / _c4_hz) / np.log(2) + _c4_cent
 
     # round in semi-tone
     if (tgt_mean_cent - src_mean_cent) >= 0:
         shift = round((tgt_mean_cent - src_mean_cent) * 1.4 / 100) * 100
     else:
-        shift = round((tgt_mean_cent - src_mean_cent) * (5/7) / 100) * 100
+        shift = round((tgt_mean_cent - src_mean_cent) * (5 / 7) / 100) * 100
 
     sm[idx_s] = hz_to_cent_based_c4(sm[idx_s])
     sm[idx_s] = np.maximum(0, sm[idx_s] + shift)
@@ -228,10 +229,14 @@ for filepath in tqdm(wav_paths, desc="Processing audio files"):
     targets = (targets - scaler["logmel"].mean_) / scaler["logmel"].scale_
     targets = torch.from_numpy(targets).view(1, -1, 80).float().to(device)
 
-    scores = (scores - scaler["lf0"].data_min_) / (scaler["lf0"].data_max_ - scaler["lf0"].data_min_)
+    scores = (scores - scaler["lf0"].data_min_) / (
+        scaler["lf0"].data_max_ - scaler["lf0"].data_min_
+    )
     scores = torch.from_numpy(scores).view(1, -1, 1).float().to(device)
 
-    lft = (lft - scaler["loud"].data_min_) / (scaler["loud"].data_max_ - scaler["loud"].data_min_)
+    lft = (lft - scaler["loud"].data_min_) / (
+        scaler["loud"].data_max_ - scaler["loud"].data_min_
+    )
     lft = torch.from_numpy(lft).view(1, -1, 1).float().to(device)
 
     sr = 24000
@@ -263,19 +268,23 @@ for filepath in tqdm(wav_paths, desc="Processing audio files"):
             ref_wave,
             sr,
             "PCM_16",
-        ) 
+        )
 
-        # normalize 
+        # normalize
         ref_cvec = (ref_cvec - scaler["hubert"].mean_) / scaler["hubert"].scale_
         ref_mel = (ref_mel - scaler["logmel"].mean_) / scaler["logmel"].scale_
         ref_cvec = torch.from_numpy(ref_cvec).view(1, -1, 768).float().to(device)
         ref_mel = torch.from_numpy(ref_mel).view(1, -1, 80).float().to(device)
         ref_lns = torch.tensor([ref_cvec.size(1)], dtype=torch.long, device=device)
 
-        ref_score = (ref_score - scaler["lf0"].data_min_) / (scaler["lf0"].data_max_ - scaler["lf0"].data_min_)
+        ref_score = (ref_score - scaler["lf0"].data_min_) / (
+            scaler["lf0"].data_max_ - scaler["lf0"].data_min_
+        )
         ref_score = torch.from_numpy(ref_score).view(1, -1, 1).float().to(device)
-        
-        ref_lft = (ref_lft - scaler["loud"].data_min_) / (scaler["loud"].data_max_ - scaler["loud"].data_min_)
+
+        ref_lft = (ref_lft - scaler["loud"].data_min_) / (
+            scaler["loud"].data_max_ - scaler["loud"].data_min_
+        )
         ref_lft = torch.from_numpy(ref_lft).view(1, -1, 1).float().to(device)
 
         # shifted source lf0

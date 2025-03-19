@@ -57,10 +57,7 @@ class NUSVC(torch.nn.Module):
         # latent -> melspec priors
         self.post_encoder = torch.nn.Conv1d(384, 80, 1)
 
-        self.cfm_decoder = CFM(
-            in_channels=160,
-            out_channels=80
-        )
+        self.cfm_decoder = CFM(in_channels=160, out_channels=80)
 
         # style encoder from espnet
         self.gst = StyleEncoder(
@@ -76,8 +73,8 @@ class NUSVC(torch.nn.Module):
         lf0,
         vuv,
         lft,
-        targets=None, # for reconstruction and training
-        reference=None, # for conversion and inference
+        targets=None,  # for reconstruction and training
+        reference=None,  # for conversion and inference
         n_timesteps=10,
         temperature=0.667,
         prompt_mask=None,
@@ -111,10 +108,14 @@ class NUSVC(torch.nn.Module):
                 mask=y_mask,
                 mu=mu,
                 spks=spk_embs,
-                )
+            )
 
             # FIXME: 80 mel dim is hardcoded
-            prior_loss = torch.sum(0.5 * ((targets.permute(0, 2, 1) - mu) ** 2 + math.log(2 * math.pi)) * y_mask)
+            prior_loss = torch.sum(
+                0.5
+                * ((targets.permute(0, 2, 1) - mu) ** 2 + math.log(2 * math.pi))
+                * y_mask
+            )
             prior_loss = prior_loss / (torch.sum(y_mask) * 80)
 
             return loss, prior_loss
@@ -125,12 +126,11 @@ class NUSVC(torch.nn.Module):
                 n_timesteps,
                 temperature,
                 spk_embs,
-                )
-            #decoder_outputs = decoder_outputs[:, :, :y_max_length]
+            )
+            # decoder_outputs = decoder_outputs[:, :, :y_max_length]
 
             return decoder_outputs.permute(0, 2, 1)
-        #return mel_.squeeze(0), lf0_, vuv_, lft_
-
+        # return mel_.squeeze(0), lf0_, vuv_, lft_
 
     def _source_mask(self, ilens: torch.Tensor) -> torch.Tensor:
         """Make masks for self-attention.
@@ -152,8 +152,6 @@ class NUSVC(torch.nn.Module):
         """
         x_masks = make_non_pad_mask(ilens).to(next(self.parameters()).device)
         return x_masks.unsqueeze(-2)
-
-
 
 
 class Conv1dResnet(torch.nn.Module):
@@ -219,7 +217,7 @@ class Conv1dResnet(torch.nn.Module):
             WNConv1d(conv_in_dim, hidden_dim, kernel_size=7, padding=0),
         ]
         for n in range(num_layers):
-            model.append(ResnetBlock(hidden_dim, dilation=2 ** n))
+            model.append(ResnetBlock(hidden_dim, dilation=2**n))
 
         last_conv_out_dim = hidden_dim if use_mdn else out_dim
         model += [
@@ -241,7 +239,6 @@ class Conv1dResnet(torch.nn.Module):
             self.mdn_layer = None
 
         init_weights(self, init_type)
-
 
     def forward(self, x, lengths=None, y=None):
         """Forward step

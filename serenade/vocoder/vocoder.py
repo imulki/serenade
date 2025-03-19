@@ -3,7 +3,7 @@ import time
 import torch
 import yaml
 
-#from parallel_wavegan.utils import load_model
+# from parallel_wavegan.utils import load_model
 from serenade.vocoder.utils import load_vocoder
 from serenade.utils import read_hdf5
 
@@ -14,9 +14,9 @@ class Vocoder(object):
     ):
         self.device = device
         if take_norm_feat:
-            assert (
-                trg_stats is not None
-            ), "trg_stats must be given if take_norm_feat=True"
+            assert trg_stats is not None, (
+                "trg_stats must be given if take_norm_feat=True"
+            )
 
             self.trg_stats = {
                 "mean": torch.tensor(trg_stats["mean"], dtype=torch.float).to(
@@ -60,7 +60,7 @@ class Vocoder(object):
         rtf = (time.time() - start) / (len(y) / self.config["sampling_rate"])
         logging.info(f"Finished waveform generation. (RTF = {rtf:.03f}).")
         return y, self.config["sampling_rate"]
-    
+
     def decode_batch(self, c):
         if self.take_norm_feat:
             # denormalize with target stats
@@ -70,6 +70,6 @@ class Vocoder(object):
 
         start = time.time()
         y = self.model.inference_batch(c, normalize_before=False)
-        #rtf = (time.time() - start) / (len(y) / self.config["sampling_rate"])
-        #logging.info(f"Finished waveform generation. (RTF = {rtf:.03f}).")
+        # rtf = (time.time() - start) / (len(y) / self.config["sampling_rate"])
+        # logging.info(f"Finished waveform generation. (RTF = {rtf:.03f}).")
         return y.squeeze(1)

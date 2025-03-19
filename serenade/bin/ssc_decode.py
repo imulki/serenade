@@ -6,7 +6,6 @@
 
 """Decode with trained singing style conversion model."""
 
-
 import argparse
 import math
 import time
@@ -31,6 +30,7 @@ from tqdm import tqdm
 
 _c4_hz = 440 * 2 ** (3 / 12 - 1)
 _c4_cent = 4800
+
 
 class F0Statistics(object):
     """F0 statistics class
@@ -138,14 +138,14 @@ def linear_midi_shift(sm, tm):
     srcstats = f0class.estimate([sm])
     trgstats = f0class.estimate([tm])
 
-    src_mean_cent = 1200 * np.log(np.exp(srcstats[0]) / _c4_hz) / np.log(2) +_c4_cent
-    tgt_mean_cent = 1200 * np.log(np.exp(trgstats[0]) / _c4_hz) / np.log(2) +_c4_cent
+    src_mean_cent = 1200 * np.log(np.exp(srcstats[0]) / _c4_hz) / np.log(2) + _c4_cent
+    tgt_mean_cent = 1200 * np.log(np.exp(trgstats[0]) / _c4_hz) / np.log(2) + _c4_cent
 
     # round in semi-tone
     if (tgt_mean_cent - src_mean_cent) >= 0:
         shift = round((tgt_mean_cent - src_mean_cent) * 1.4 / 100) * 100
     else:
-        shift = round((tgt_mean_cent - src_mean_cent) * (5/7) / 100) * 100
+        shift = round((tgt_mean_cent - src_mean_cent) * (5 / 7) / 100) * 100
 
     sm[idx_s] = hz_to_cent_based_c4(sm[idx_s])
     sm[idx_s] = np.maximum(0, sm[idx_s] + shift)
@@ -169,9 +169,15 @@ def get_random_ref_style(dumpdir, utt_id):
         if not style_files:
             # NOTE: this probably breaks if you have more than 2 jobs for extracting files
             if "dump.2" in dirname:
-                pattern = os.path.join(dirname.replace("dump.2", "dump.1"), f"{ln}_{spk}_*_{style}_Group_*.h5")
+                pattern = os.path.join(
+                    dirname.replace("dump.2", "dump.1"),
+                    f"{ln}_{spk}_*_{style}_Group_*.h5",
+                )
             elif "dump.1" in dirname:
-                pattern = os.path.join(dirname.replace("dump.1", "dump.2"), f"{ln}_{spk}_*_{style}_Group_*.h5")
+                pattern = os.path.join(
+                    dirname.replace("dump.1", "dump.2"),
+                    f"{ln}_{spk}_*_{style}_Group_*.h5",
+                )
             style_files = glob.glob(pattern)
 
         if style_files:
@@ -184,9 +190,7 @@ def get_random_ref_style(dumpdir, utt_id):
 def main():
     """Run decoding process."""
     parser = argparse.ArgumentParser(
-        description=(
-            "Decode with trained SSC model " "(See detail in bin/ssc_decode.py)."
-        )
+        description=("Decode with trained SSC model (See detail in bin/ssc_decode.py).")
     )
     parser.add_argument(
         "--config",
@@ -323,7 +327,7 @@ def main():
     dataset = FeatsDataset(
         root_dir=args.dumpdir,
         scaler=scaler,
-        score_type="est_lf0_score", # this is fixed, we never use gt_lf0_score in inference
+        score_type="est_lf0_score",  # this is fixed, we never use gt_lf0_score in inference
         return_utt_id=True,
         allow_cache=config.get("allow_cache", False),  # keep compatibility
     )
@@ -371,13 +375,15 @@ def main():
             if ref_dict is None:
                 ref_dict = get_random_ref_style(args.dumpdir, utt_id)
 
-            for key, ref_h5path in tqdm(ref_dict.items(), desc="Processing reference styles"):
+            for key, ref_h5path in tqdm(
+                ref_dict.items(), desc="Processing reference styles"
+            ):
                 if key in utt_id:
                     # avoid reconstruction
                     continue
 
                 logging.info(f"Processing reference style: {key}")
-                #spk, style = key.split("_")
+                # spk, style = key.split("_")
                 style = key
                 ref_cvec = read_hdf5(ref_h5path, "hubert")
                 ref_mel = read_hdf5(ref_h5path, "logmel")
@@ -391,19 +397,27 @@ def main():
                     ref_wave,
                     config["sampling_rate"],
                     "PCM_16",
-                ) 
+                )
 
-                # normalize 
+                # normalize
                 ref_cvec = (ref_cvec - scaler["hubert"].mean_) / scaler["hubert"].scale_
                 ref_mel = (ref_mel - scaler["logmel"].mean_) / scaler["logmel"].scale_
                 ref_cvec = torch.from_numpy(ref_cvec).float().to(device).unsqueeze(0)
                 ref_mel = torch.from_numpy(ref_mel).float().to(device).unsqueeze(0)
-                ref_lns = torch.tensor([ref_cvec.size(1)], dtype=torch.long, device=device)
+                ref_lns = torch.tensor(
+                    [ref_cvec.size(1)], dtype=torch.long, device=device
+                )
 
-                ref_score = (ref_score - scaler["score"].data_min_) / (scaler["score"].data_max_ - scaler["score"].data_min_)
-                ref_score = torch.from_numpy(ref_score).float().to(device).view(1, -1, 1)
-                
-                ref_lft = (ref_lft - scaler["loud"].data_min_) / (scaler["loud"].data_max_ - scaler["loud"].data_min_)
+                ref_score = (ref_score - scaler["score"].data_min_) / (
+                    scaler["score"].data_max_ - scaler["score"].data_min_
+                )
+                ref_score = (
+                    torch.from_numpy(ref_score).float().to(device).view(1, -1, 1)
+                )
+
+                ref_lft = (ref_lft - scaler["loud"].data_min_) / (
+                    scaler["loud"].data_max_ - scaler["loud"].data_min_
+                )
                 ref_lft = torch.from_numpy(ref_lft).float().to(device).unsqueeze(0)
 
                 # shifted source lf0

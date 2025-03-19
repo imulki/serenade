@@ -141,12 +141,9 @@ def main():
         scaler["loud"].partial_fit(loud)
 
     # save scaler file
-    dump(
-        scaler,
-        os.path.join(args.dumpdir, f"stats.joblib")
-    )
+    dump(scaler, os.path.join(args.dumpdir, f"stats.joblib"))
     logging.info(f"Successfully saved statistics file.")
-    
+
 
 if __name__ == "__main__":
     main()

@@ -200,7 +200,6 @@ class SSCTrainer(Trainer):
                 "PCM_16",
             )
 
-
             # reconstruction
             outs = model_.inference(
                 x,
@@ -213,7 +212,7 @@ class SSCTrainer(Trainer):
                 score,
                 loud,
             )
-            
+
             _plot_and_save(
                 outs.cpu().numpy(),
                 dirname + f"/outs/{idx}_out.png",

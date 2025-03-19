@@ -61,7 +61,7 @@ def count_parameters(model):
         table.add_row([name, params])
         total_params += params
     print(table)
-    
+
     # Summary table grouped by main module
     summary_table = PrettyTable(["Main Module", "Parameters"])
     module_params = defaultdict(int)
@@ -70,14 +70,14 @@ def count_parameters(model):
             continue
         # Remove "module." prefix if present
         if name.startswith("module."):
-            main_module = name[7:].split('.')[0]
+            main_module = name[7:].split(".")[0]
         else:
-            main_module = name.split('.')[0]
+            main_module = name.split(".")[0]
         module_params[main_module] += parameter.numel()
-    
+
     for module, params in module_params.items():
         summary_table.add_row([module, params])
-    
+
     print("\nSummary by main module:")
     print(summary_table)
     print(f"\nTotal Trainable Params: {total_params}")
@@ -88,7 +88,7 @@ def set_seed(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
     torch.cuda.manual_seed_all(seed)
-    os.environ['PYTHONHASHSEED'] = str(seed)
+    os.environ["PYTHONHASHSEED"] = str(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.enabled = False
@@ -182,7 +182,7 @@ def main():
     if not torch.cuda.is_available():
         device = torch.device("cpu")
     else:
-        #device = torch.device("cuda")
+        # device = torch.device("cuda")
         device = torch.device(f"cuda:{args.rank}")
         torch.cuda.set_device(args.rank)
         # see https://discuss.pytorch.org/t/what-does-torch-backends-cudnn-benchmark-do/5936
@@ -313,7 +313,7 @@ def main():
         serenade.models,
         config.get("model_type", "Serenade"),
     )
-    #torch.set_float32_matmul_precision("high") 
+    # torch.set_float32_matmul_precision("high")
     model = model_class(**config["model_params"]).to(device)
 
     # load vocoder
@@ -354,7 +354,7 @@ def main():
             model,
             device_ids=[args.rank],
             output_device=args.rank,
-            find_unused_parameters=True
+            find_unused_parameters=True,
         )
         logging.info("Model wrapped with DistributedDataParallel.")
 

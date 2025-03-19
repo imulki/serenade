@@ -33,10 +33,8 @@ class CFM(torch.nn.Module):
             attention_head_dim=decoder_attention_head_dim,
         )
 
-
     def forward(self, x1, mask, mu, spks, mask_l=None):
         return self.compute_loss(x1, mask, mu, spks, mask_l)
-    
 
     @torch.inference_mode()
     def inference(self, mu, mask, n_timesteps=10, temperature=0.667, spks=None):
@@ -56,11 +54,13 @@ class CFM(torch.nn.Module):
             sample: generated outputs
                 shape: (batch_size, n_feats, output_dim)
         """
-        z = torch.randn((mu.shape[0], self.out_channels, mu.shape[2])).to(mu.device) * temperature
+        z = (
+            torch.randn((mu.shape[0], self.out_channels, mu.shape[2])).to(mu.device)
+            * temperature
+        )
         t_span = torch.linspace(0, 1, n_timesteps + 1, device=mu.device)
 
         return self.solve_euler(z, t_span=t_span, mu=mu, mask=mask, trg_spks=spks)
-
 
     def solve_euler(self, x, t_span, mu, mask, trg_spks):
         """
@@ -80,7 +80,7 @@ class CFM(torch.nn.Module):
 
         sol = []
 
-        #for step in tqdm(range(1, len(t_span)), desc="sample time step", total=len(t_span) - 1):
+        # for step in tqdm(range(1, len(t_span)), desc="sample time step", total=len(t_span) - 1):
         for step in range(1, len(t_span)):
             dphi_dt = self.estimator(x, mask, mu, t, trg_spks)
 
@@ -91,7 +91,6 @@ class CFM(torch.nn.Module):
                 dt = t_span[step + 1] - t
 
         return sol[-1]
-    
 
     def compute_loss(self, x1, mask, mu, spks, mask_l=None):
         """Computes diffusion loss
@@ -126,7 +125,7 @@ class CFM(torch.nn.Module):
             denoised = denoised * mask_l
             u = u * mask_l
 
-        loss = F.mse_loss(denoised, u, reduction="sum") 
+        loss = F.mse_loss(denoised, u, reduction="sum")
         if mask_l is not None:
             loss = loss / (torch.sum(mask_l) * u.shape[1])
         else:

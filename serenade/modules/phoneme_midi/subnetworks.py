@@ -28,7 +28,7 @@ class ConvStack(nn.Module):
         )
         self.fc = nn.Sequential(
             nn.Linear((output_features // 8) * (input_features // 4), output_features),
-            nn.Dropout(0.5)
+            nn.Dropout(0.5),
         )
 
     def forward(self, data):
@@ -45,7 +45,9 @@ class DilatedConvStack(nn.Module):
         # input is batch_size * 1 channel * frames * input_features
         self.cnn = nn.Sequential(
             # layer 0
-            nn.Conv2d(1, output_features // 16, (3, 3), padding=(2, 1), dilation=(2, 1)),
+            nn.Conv2d(
+                1, output_features // 16, (3, 3), padding=(2, 1), dilation=(2, 1)
+            ),
             nn.BatchNorm2d(output_features // 16),
             nn.ReLU(),
             # layer 1
@@ -64,7 +66,7 @@ class DilatedConvStack(nn.Module):
         )
         self.fc = nn.Sequential(
             nn.Linear((output_features // 8) * (input_features // 4), output_features),
-            nn.Dropout(0.5)
+            nn.Dropout(0.5),
         )
 
     def forward(self, data):
@@ -79,7 +81,13 @@ class BiLSTM(nn.Module):
 
     def __init__(self, input_features, recurrent_features, num_layers=1):
         super().__init__()
-        self.rnn = nn.LSTM(input_features, recurrent_features, num_layers=num_layers, batch_first=True, bidirectional=True)
+        self.rnn = nn.LSTM(
+            input_features,
+            recurrent_features,
+            num_layers=num_layers,
+            batch_first=True,
+            bidirectional=True,
+        )
 
     def forward(self, x):
         if self.training:
@@ -91,9 +99,15 @@ class BiLSTM(nn.Module):
             num_directions = 2 if self.rnn.bidirectional else 1
             num_layers = self.rnn.num_layers
 
-            h = torch.zeros(num_directions * num_layers, batch_size, hidden_size).to(x.device)
-            c = torch.zeros(num_directions * num_layers, batch_size, hidden_size).to(x.device)
-            output = torch.zeros(batch_size, sequence_length, num_directions * hidden_size).to(x.device)
+            h = torch.zeros(num_directions * num_layers, batch_size, hidden_size).to(
+                x.device
+            )
+            c = torch.zeros(num_directions * num_layers, batch_size, hidden_size).to(
+                x.device
+            )
+            output = torch.zeros(
+                batch_size, sequence_length, num_directions * hidden_size
+            ).to(x.device)
 
             # forward direction
             slices = range(0, sequence_length, self.inference_chunk_length)

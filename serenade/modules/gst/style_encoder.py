@@ -130,9 +130,9 @@ class ReferenceEncoder(torch.nn.Module):
 
         # check hyperparameters are valid
         assert conv_kernel_size % 2 == 1, "kernel size must be odd."
-        assert (
-            len(conv_chans_list) == conv_layers
-        ), "the number of conv layers and length of channels list must be the same."
+        assert len(conv_chans_list) == conv_layers, (
+            "the number of conv layers and length of channels list must be the same."
+        )
 
         convs = []
         padding = (conv_kernel_size - 1) // 2

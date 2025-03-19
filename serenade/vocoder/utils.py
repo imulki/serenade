@@ -61,4 +61,3 @@ def load_vocoder(checkpoint, config=None, stats=None):
         model.register_stats(stats)
 
     return model
-

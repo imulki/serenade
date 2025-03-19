@@ -73,7 +73,9 @@ def convert_continuos_f0(f0):
 
 
 @torch.no_grad()
-@hydra.main(version_base=None, config_path="sifigan_config", config_name="ssc_postprocessing")
+@hydra.main(
+    version_base=None, config_path="sifigan_config", config_name="ssc_postprocessing"
+)
 def main(config: DictConfig) -> None:
     """Run analysis-synthesis process."""
 
@@ -88,7 +90,9 @@ def main(config: DictConfig) -> None:
 
     # load pre-trained model from checkpoint file
     model = instantiate(config.generator)
-    state_dict = torch.load(to_absolute_path(config.checkpoint_path), map_location="cpu")
+    state_dict = torch.load(
+        to_absolute_path(config.checkpoint_path), map_location="cpu"
+    )
     model.load_state_dict(state_dict["model"]["generator"])
     logger.info(f"Loaded model parameters from {config.checkpoint_path}.")
     model.remove_weight_norm()
@@ -108,7 +112,9 @@ def main(config: DictConfig) -> None:
 
     logger.info(f"Processing {config.in_dir}")
     wav_paths = glob.glob(os.path.join(config.in_dir, "**", "*.wav"), recursive=True)
-    wav_paths = [path for path in wav_paths if "_reference" not in path and "_gt" not in path]
+    wav_paths = [
+        path for path in wav_paths if "_reference" not in path and "_gt" not in path
+    ]
 
     for wav_file in wav_paths:
         logger.info(f"Start processing {wav_file}")
@@ -153,7 +159,7 @@ def main(config: DictConfig) -> None:
         # Interpolate f0_ to match the size of f0__
         if len(f0_) != len(f0_cvt):
             x_orig = np.arange(len(f0_))
-            x_new = np.linspace(0, len(f0_)-1, len(f0_cvt))
+            x_new = np.linspace(0, len(f0_) - 1, len(f0_cvt))
             f0_ = np.interp(x_new, x_orig, f0_.ravel())
             f0_ = np.maximum(f0_, 0)
 
@@ -221,7 +227,7 @@ def main(config: DictConfig) -> None:
         y = model(in_signal, c, dfs)[0]
 
         # save output signal as PCM 16 bit wav file
-        #base = os.path.basename(wav)
+        # base = os.path.basename(wav)
         out_path = wav_file.replace(".wav", f"_sifigan.wav")
         sf.write(
             to_absolute_path(out_path),

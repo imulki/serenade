@@ -12,16 +12,17 @@ class PhonemeRecognitionModel(nn.Module):
 
         self.criterion = nn.CrossEntropyLoss()
 
-        self.input_features = config['n_mels']
+        self.input_features = config["n_mels"]
         self.output_features = 39
 
-        self.conv_stack, self.rnn, self.fc = self._create_model(self.input_features,
-                                                                self.output_features, config)
+        self.conv_stack, self.rnn, self.fc = self._create_model(
+            self.input_features, self.output_features, config
+        )
 
         self.feat_ext = FeatureExtractor(config)
 
     def _create_model(self, input_features, output_features, config):
-        model_complexity = config['model_complexity']
+        model_complexity = config["model_complexity"]
         model_size = model_complexity * 16
 
         conv_stack = ConvStack(input_features, model_size)
@@ -37,11 +38,13 @@ class PhonemeRecognitionModel(nn.Module):
         return x
 
     def run_on_batch(self, batch):
-        feat = self.feat_ext(batch['audio']).transpose(1, 2).unsqueeze(1)  # (N, 1, T, F)
+        feat = (
+            self.feat_ext(batch["audio"]).transpose(1, 2).unsqueeze(1)
+        )  # (N, 1, T, F)
         pred = self(feat)  # (N, T, F)
 
         predictions = {
-            'frame': pred,
+            "frame": pred,
         }
 
         return predictions

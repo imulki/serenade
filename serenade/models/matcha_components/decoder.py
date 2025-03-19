@@ -16,11 +16,7 @@ class SpeakerAdapter(nn.Module):
     Adaspeech2 conditional layer normalization.
     """
 
-    def __init__(self,
-                 speaker_dim,
-                 adapter_dim,
-                 epsilon=1e-5
-                 ):
+    def __init__(self, speaker_dim, adapter_dim, epsilon=1e-5):
         super(SpeakerAdapter, self).__init__()
         self.speaker_dim = speaker_dim
         self.adapter_dim = adapter_dim
@@ -84,15 +80,16 @@ class Block1D(torch.nn.Module):
 class ResnetBlock1D(torch.nn.Module):
     def __init__(self, dim, dim_out, time_emb_dim, spk_embed_dim, groups=8):
         super().__init__()
-        self.mlp = torch.nn.Sequential(nn.Mish(), torch.nn.Linear(time_emb_dim, dim_out))
+        self.mlp = torch.nn.Sequential(
+            nn.Mish(), torch.nn.Linear(time_emb_dim, dim_out)
+        )
 
         self.block1 = Block1D(dim, dim_out, groups=groups)
         self.block2 = Block1D(dim_out, dim_out, groups=groups)
 
         self.res_conv = torch.nn.Conv1d(dim, dim_out, 1)
         self.speaker_projection = SpeakerAdapter(
-            speaker_dim=spk_embed_dim,
-            adapter_dim=dim_out
+            speaker_dim=spk_embed_dim, adapter_dim=dim_out
         )
 
     def forward(self, x, mask, time_emb, spks):
@@ -174,7 +171,14 @@ class Upsample1D(nn.Module):
             number of output channels. Defaults to `channels`.
     """
 
-    def __init__(self, channels, use_conv=False, use_conv_transpose=True, out_channels=None, name="conv"):
+    def __init__(
+        self,
+        channels,
+        use_conv=False,
+        use_conv_transpose=True,
+        out_channels=None,
+        name="conv",
+    ):
         super().__init__()
         self.channels = channels
         self.out_channels = out_channels or channels
@@ -241,7 +245,12 @@ class Decoder(nn.Module):
             input_channel = output_channel
             output_channel = channels[i]
             is_last = i == len(channels) - 1
-            resnet = ResnetBlock1D(dim=input_channel, dim_out=output_channel, spk_embed_dim=spk_embed_dim, time_emb_dim=time_embed_dim)
+            resnet = ResnetBlock1D(
+                dim=input_channel,
+                dim_out=output_channel,
+                spk_embed_dim=spk_embed_dim,
+                time_emb_dim=time_embed_dim,
+            )
             transformer_blocks = nn.ModuleList(
                 [
                     self.get_block(
@@ -257,16 +266,25 @@ class Decoder(nn.Module):
                 ]
             )
             downsample = (
-                Downsample1D(output_channel) if not is_last else nn.Conv1d(output_channel, output_channel, 3, padding=1)
+                Downsample1D(output_channel)
+                if not is_last
+                else nn.Conv1d(output_channel, output_channel, 3, padding=1)
             )
 
-            self.down_blocks.append(nn.ModuleList([resnet, transformer_blocks, downsample]))
+            self.down_blocks.append(
+                nn.ModuleList([resnet, transformer_blocks, downsample])
+            )
 
         for i in range(num_mid_blocks):
             input_channel = channels[-1]
             out_channels = channels[-1]
 
-            resnet = ResnetBlock1D(dim=input_channel, dim_out=output_channel, spk_embed_dim=spk_embed_dim, time_emb_dim=time_embed_dim)
+            resnet = ResnetBlock1D(
+                dim=input_channel,
+                dim_out=output_channel,
+                spk_embed_dim=spk_embed_dim,
+                time_emb_dim=time_embed_dim,
+            )
 
             transformer_blocks = nn.ModuleList(
                 [
@@ -325,7 +343,15 @@ class Decoder(nn.Module):
         self.initialize_weights()
 
     @staticmethod
-    def get_block(block_type, dim, attention_head_dim, num_heads, dropout, act_fn, cross_attention_dim=None):
+    def get_block(
+        block_type,
+        dim,
+        attention_head_dim,
+        num_heads,
+        dropout,
+        act_fn,
+        cross_attention_dim=None,
+    ):
         block = BasicTransformerBlock(
             dim=dim,
             num_attention_heads=num_heads,
@@ -419,7 +445,9 @@ class Decoder(nn.Module):
             mask_up = masks.pop()
             # NOTE: conv layers add 1 extra dim sometimes
             x = x[:, :, :max_shape]
-            x = resnet(pack([x, hiddens.pop()], "b * t")[0], mask_up, t, speaker_features)
+            x = resnet(
+                pack([x, hiddens.pop()], "b * t")[0], mask_up, t, speaker_features
+            )
             x = rearrange(x, "b c t -> b t c")
             mask_up = rearrange(mask_up, "b 1 t -> b t")
             for transformer_block in transformer_blocks:

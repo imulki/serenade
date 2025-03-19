@@ -11,14 +11,21 @@ from tqdm import tqdm
 
 from serenade.utils import find_files
 
+
 def get_basename(path):
     return os.path.splitext(os.path.split(path)[-1])[0]
 
+
 def get_parser():
     parser = argparse.ArgumentParser(description="objective evaluation script.")
-    parser.add_argument("--textgrid_dir", required=True, type=str, help="directory for textgrid files")
-    parser.add_argument("--output", required=True, type=str, help="path to output segments file")
+    parser.add_argument(
+        "--textgrid_dir", required=True, type=str, help="directory for textgrid files"
+    )
+    parser.add_argument(
+        "--output", required=True, type=str, help="path to output segments file"
+    )
     return parser
+
 
 def main():
     args = get_parser().parse_args()
@@ -31,7 +38,7 @@ def main():
 
             tg = textgrid.TextGrid.fromFile(f)
             l = len(tg[0])
-            
+
             # find start time
             for i in range(l):
                 if len(tg[0][i].mark) > 0:
@@ -45,6 +52,7 @@ def main():
                     break
 
             outf.write(f"{filename} {filename} {start_time} {end_time}\n")
+
 
 if __name__ == "__main__":
     main()

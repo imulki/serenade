@@ -70,7 +70,6 @@ class Trainer(object):
 
         self.gradient_accumulate_steps = self.config.get("gradient_accumulate_steps", 1)
 
-
     def run(self):
         """Run training."""
         self.backward_steps = 0
@@ -219,7 +218,7 @@ class Trainer(object):
                     f"(Steps: {self.steps}) {key} = {self.total_train_loss[key]:.4f}."
                 )
             self._write_to_tensorboard(self.total_train_loss)
-            peak_memory = torch.cuda.max_memory_allocated()/(2**30)
+            peak_memory = torch.cuda.max_memory_allocated() / (2**30)
             logging.info(f"Peak Memory: {peak_memory:.4f} GB")
             torch.cuda.reset_peak_memory_stats()
 

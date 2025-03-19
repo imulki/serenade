@@ -90,9 +90,9 @@ class UpsampleNetwork(torch.nn.Module):
             self.up_layers += [stretch]
 
             # conv layer
-            assert (
-                freq_axis_kernel_size - 1
-            ) % 2 == 0, "Not support even number freq axis kernel size."
+            assert (freq_axis_kernel_size - 1) % 2 == 0, (
+                "Not support even number freq axis kernel size."
+            )
             freq_axis_padding = (freq_axis_kernel_size - 1) // 2
             kernel_size = (freq_axis_kernel_size, scale * 2 + 1)
             if use_causal_conv:

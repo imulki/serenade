@@ -36,8 +36,8 @@ class Serenade(torch.nn.Module):
     def __init__(
         self,
         # model params below
-        input_dim=768, # cvec
-        output_dim=80, # logmel
+        input_dim=768,  # cvec
+        output_dim=80,  # logmel
         encoder_channels=80,
         decoder_channels=512,
         gst_embed_dim=256,
@@ -78,14 +78,14 @@ class Serenade(torch.nn.Module):
 
         # flowmatching model
         self.cfm_decoder = CFM(
-            in_channels=conditioning_dim + output_dim, # combines the target and input dimensions
+            in_channels=conditioning_dim
+            + output_dim,  # combines the target and input dimensions
             out_channels=output_dim,
             spk_embed_dim=gst_embed_dim,
             decoder_channels=(decoder_channels, decoder_channels),
             decoder_attention_head_dim=decoder_attention_head_dim,
         )
         self.mask_size = mask_size
-
 
     def forward(
         self,
@@ -118,7 +118,9 @@ class Serenade(torch.nn.Module):
         mask = make_non_pad_mask(lengths).to(x.device).unsqueeze(1)
 
         # dynamic masked segment prediction
-        mask_size = random.uniform(self.mask_size[0], self.mask_size[1]) * enc_outs.size(1)
+        mask_size = random.uniform(
+            self.mask_size[0], self.mask_size[1]
+        ) * enc_outs.size(1)
         mask_size = int(mask_size)
 
         seg_start = random.randint(0, enc_outs.size(1) - mask_size)
@@ -134,7 +136,14 @@ class Serenade(torch.nn.Module):
         mask_c[:, :, seg_start:seg_end] = 0
 
         # compute prior loss (no masking) for content features
-        prior_loss = torch.sum(0.5 * ((logmel.permute(0, 2, 1) - enc_outs.permute(0, 2, 1)) ** 2 + math.log(2 * math.pi)) * mask)
+        prior_loss = torch.sum(
+            0.5
+            * (
+                (logmel.permute(0, 2, 1) - enc_outs.permute(0, 2, 1)) ** 2
+                + math.log(2 * math.pi)
+            )
+            * mask
+        )
         ret["prior_loss"] = prior_loss / (torch.sum(mask) * self.output_dim)
 
         # mask target features
@@ -155,7 +164,6 @@ class Serenade(torch.nn.Module):
         )
 
         return ret
-
 
     def inference(
         self,
@@ -182,7 +190,12 @@ class Serenade(torch.nn.Module):
         ref_enc_outs = torch.cat([ref_enc_outs, ref_midi, ref_lft, cond], dim=-1)
 
         # add zero vector replacing conditioning features, emulating masking
-        zero_cond = torch.zeros(enc_outs_.shape[0], enc_outs_.shape[1], cond.shape[-1], device=enc_outs_.device)
+        zero_cond = torch.zeros(
+            enc_outs_.shape[0],
+            enc_outs_.shape[1],
+            cond.shape[-1],
+            device=enc_outs_.device,
+        )
         enc_outs = torch.cat([enc_outs_, midi, lft, zero_cond], dim=-1)
 
         # concatenate reference and source features in time dimension
@@ -203,7 +216,7 @@ class Serenade(torch.nn.Module):
 
         # discard reference part
         # FIXME: not very efficient when batched
-        mel_pred = mel_pred[:, ref_lengths[0]:, :]
+        mel_pred = mel_pred[:, ref_lengths[0] :, :]
 
         return mel_pred.squeeze(0)
 
@@ -271,7 +284,7 @@ class Conv1dResnet(torch.nn.Module):
             WNConv1d(conv_in_dim, hidden_dim, kernel_size=7, padding=0),
         ]
         for n in range(num_layers):
-            model.append(ResnetBlock(hidden_dim, dilation=2 ** n))
+            model.append(ResnetBlock(hidden_dim, dilation=2**n))
 
         last_conv_out_dim = hidden_dim if use_mdn else out_dim
         model += [
@@ -293,7 +306,6 @@ class Conv1dResnet(torch.nn.Module):
             self.mdn_layer = None
 
         init_weights(self, init_type)
-
 
     def forward(self, x, lengths=None, y=None):
         """Forward step

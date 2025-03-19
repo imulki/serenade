@@ -17,7 +17,6 @@ from torch.utils.data import Dataset
 from serenade.utils import find_files, read_hdf5, get_basename
 
 
-
 class FeatsDataset(Dataset):
     """PyTorch compatible audio and mel dataset."""
 
@@ -50,9 +49,7 @@ class FeatsDataset(Dataset):
 
         # assert the number of files
         assert len(audio_files) != 0, f"Not found any audio files in ${root_dir}."
-        utt_ids = [
-            os.path.splitext(os.path.basename(f))[0] for f in audio_files
-        ]
+        utt_ids = [os.path.splitext(os.path.basename(f))[0] for f in audio_files]
         logging.info(f"score type: {score_type}")
         self.utt_ids = utt_ids
         self.audio_files = audio_files
@@ -71,7 +68,6 @@ class FeatsDataset(Dataset):
             self.manager = Manager()
             self.caches = self.manager.list()
             self.caches += [() for _ in range(len(audio_files))]
-
 
     def __getitem__(self, idx):
         """Get specified idx items.
@@ -99,16 +95,23 @@ class FeatsDataset(Dataset):
 
         # normalize the data
         if self.scaler is not None:
-            logmel = (logmel - self.scaler["logmel"].mean_) / self.scaler["logmel"].scale_
-            hubert = (hubert - self.scaler["hubert"].mean_) / self.scaler["hubert"].scale_
-            score = (score - self.scaler["score"].data_min_) / (self.scaler["score"].data_max_ - self.scaler["score"].data_min_)
-            #score = (score - self.scaler["lf0"].data_min_) / (self.scaler["lf0"].data_max_ - self.scaler["lf0"].data_min_)
-            loud = (loud - self.scaler["loud"].data_min_) / (self.scaler["loud"].data_max_ - self.scaler["loud"].data_min_)
+            logmel = (logmel - self.scaler["logmel"].mean_) / self.scaler[
+                "logmel"
+            ].scale_
+            hubert = (hubert - self.scaler["hubert"].mean_) / self.scaler[
+                "hubert"
+            ].scale_
+            score = (score - self.scaler["score"].data_min_) / (
+                self.scaler["score"].data_max_ - self.scaler["score"].data_min_
+            )
+            # score = (score - self.scaler["lf0"].data_min_) / (self.scaler["lf0"].data_max_ - self.scaler["lf0"].data_min_)
+            loud = (loud - self.scaler["loud"].data_min_) / (
+                self.scaler["loud"].data_max_ - self.scaler["loud"].data_min_
+            )
 
             # debugger
             if np.isnan(logmel).any():
                 logging.info(f"contains nan: {utt_id}")
-
 
         items = {
             "audio": audio,

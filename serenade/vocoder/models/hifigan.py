@@ -879,4 +879,3 @@ class HiFiGANMultiScaleMultiPeriodDiscriminator(torch.nn.Module):
         msd_outs = self.msd(x)
         mpd_outs = self.mpd(x)
         return msd_outs + mpd_outs
-

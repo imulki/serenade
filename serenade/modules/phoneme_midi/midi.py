@@ -19,20 +19,31 @@ def save_midi(path, pitches, intervals, bpm, add_start_point=False):
 
     events = []
     if add_start_point:
-        events.append(dict(type='on', pitch=0, time=0, velocity=1))  # for start point
-        events.append(dict(type='off', pitch=0, time=0, velocity=1))
+        events.append(dict(type="on", pitch=0, time=0, velocity=1))  # for start point
+        events.append(dict(type="off", pitch=0, time=0, velocity=1))
     for i in range(len(pitches)):
-        events.append(dict(type='on', pitch=pitches[i], time=intervals[i][0], velocity=100))
-        events.append(dict(type='off', pitch=pitches[i], time=intervals[i][1], velocity=100))
-    events.sort(key=lambda row: row['time'])
+        events.append(
+            dict(type="on", pitch=pitches[i], time=intervals[i][0], velocity=100)
+        )
+        events.append(
+            dict(type="off", pitch=pitches[i], time=intervals[i][1], velocity=100)
+        )
+    events.sort(key=lambda row: row["time"])
 
-    track.append(MetaMessage('set_tempo', tempo=bpm2tempo(bpm), time=0))
+    track.append(MetaMessage("set_tempo", tempo=bpm2tempo(bpm), time=0))
     last_tick = 0
     for event in events:
-        current_tick = int(event['time'] * ticks_per_second)
-        velocity = int(event['velocity'])
-        pitch = event['pitch']
-        track.append(Message('note_' + event['type'], note=pitch, velocity=velocity, time=current_tick - last_tick))
+        current_tick = int(event["time"] * ticks_per_second)
+        velocity = int(event["velocity"])
+        pitch = event["pitch"]
+        track.append(
+            Message(
+                "note_" + event["type"],
+                note=pitch,
+                velocity=velocity,
+                time=current_tick - last_tick,
+            )
+        )
         last_tick = current_tick
 
     file.save(path)
