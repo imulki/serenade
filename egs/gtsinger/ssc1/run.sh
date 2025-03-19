@@ -298,11 +298,9 @@ fi
 if [ "${stage}" -le 9 ] && [ "${stop_stage}" -ge 9 ]; then
     echo "Stage 9: SiFiGAN post-processing"
     outdir="${expdir}/results/$(basename "${checkpoint}" .pkl)"
-    sifigan-anasyn \
+    serenade-postprocessing \
         generator=sifigan \
         in_dir="${outdir}/${test_set}" \
-        out_dir=exp \
         stats="pt_models/postprocessing_sifigan/stats.joblib" \
-        checkpoint_path="pt_models/postprocessing_sifigan/model.pkl" \
-        f0_factors=[1.0]
+        checkpoint_path="pt_models/postprocessing_sifigan/model.pkl"
 fi
