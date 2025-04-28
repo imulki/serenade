@@ -34,6 +34,8 @@ You can run the recipe from each stage.
 
 ### Pretrained Models
 Download from the Google Drive link [here](https://drive.google.com/file/d/1ZhJgLHzwduELL2rzleOGDxLu4ivJ6ss-/view?usp=sharing). Then, unzip and place the directory in the `egs/gtsinger/ssc1` directory.
+Note that using this pretrained model is **NOT** allowed for the SVCC 2025 dataset. Another pretrained model using the SVCC 2025 dataset will be provided soon.
+
 
 You can also use the script below to automatically download and unzip the pretrained models.
 ```bash
