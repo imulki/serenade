@@ -19,7 +19,7 @@ f0_path=conf/f0.yaml
 ref_dict=conf/refstyles.json
 
 # dataset configuration
-db_root=downloads/SVCC2025   # path to the GTSinger dataset
+db_root=downloads/smol2   # path to the GTSinger dataset
 dumpdir=dump                # directory to dump full features
 train_set=train-gtsinger
 dev_set=dev-gtsinger
@@ -195,15 +195,12 @@ if [ "${stage}" -le 6 ] && [ "${stop_stage}" -ge 6 ]; then
     [ -z "${checkpoint}" ] && checkpoint="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
     outdir="${expdir}/results/$(basename "${checkpoint}" .pkl)"
     python3 local/create_wav_scp.py \
-        --input_dir "${outdir}/${dev_set}" \
-        --output_file "data/${dev_set}_cyclic/wav.scp"
-    python3 local/create_wav_scp.py \
         --input_dir "${outdir}/${train_set}" \
         --output_file "data/${train_set}_cyclic/wav.scp"
 
     # extract features from converted samples
     pids=()
-    for name in "${train_set}_cyclic" "${dev_set}_cyclic"; do
+    for name in "${train_set}_cyclic"; do
     (
         [ ! -e "${dumpdir}/${name}/raw" ] && mkdir -p "${dumpdir}/${name}/raw"
         echo "Feature extraction start. See the progress via ${dumpdir}/${name}/raw/preprocessing.*.log."
@@ -230,15 +227,11 @@ if [ "${stage}" -le 6 ] && [ "${stop_stage}" -ge 6 ]; then
         --outdir "${dumpdir}/${train_set}_cyclic/raw" \
         --dumpdir "${dumpdir}" \
         --train_set "${train_set}"
-    python3 local/create_cyclic_dump.py \
-        --outdir "${dumpdir}/${dev_set}_cyclic/raw" \
-        --dumpdir "${dumpdir}" \
-        --train_set "${dev_set}"
 fi
 
 if [ -z ${cyclic_pretrain} ]; then
-    [ -z "${checkpoint}" ] && checkpoint_cyclic="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
-    cyclic_pretrain=${checkpoint_cyclic}
+    [ -z "${checkpoint}" ] && checkpoint="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
+    cyclic_pretrain=${checkpoint}
 fi
 expdir=${expdir}_cyclic
 
@@ -257,7 +250,7 @@ if [ "${stage}" -le 7 ] && [ "${stop_stage}" -ge 7 ]; then
         ${train} \
             --config "${cyclic_conf}" \
             --train-dumpdir "${dumpdir}/${train_set}_cyclic/raw" \
-            --dev-dumpdir "${dumpdir}/${dev_set}_cyclic/raw" \
+            --dev-dumpdir "${dumpdir}/${dev_set}/raw" \
             --stats "${expdir}/stats.joblib" \
             --outdir "${expdir}" \
             --init-checkpoint "${cyclic_pretrain}" \

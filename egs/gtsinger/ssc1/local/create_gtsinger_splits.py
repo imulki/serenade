@@ -17,8 +17,8 @@ def create_splits(wav_scp, train_set, dev_set, test_set):
     test_f = open(test_set, "w")
 
     # Note that these are just for the Serenade paper
-    dev_keywords = ["Safe_and_Sound_"]
-    test_keywords = ["What_Are_Words_"]
+    dev_keywords = ["song2"]
+    test_keywords = ["song3"]
 
     # Sort lines into splits
     for line in lines:
@@ -34,8 +34,8 @@ def create_splits(wav_scp, train_set, dev_set, test_set):
             if "Glissando_Group" in line:
                 continue
             test_f.write(line)
-        else:
-            train_f.write(line)
+        # else:
+        train_f.write(line)
 
     # Close files
     train_f.close()
