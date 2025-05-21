@@ -472,7 +472,7 @@ def main():
         loud = np.expand_dims(loud, axis=-1)
 
         # extract F0 for post-processing
-        spk_id = utt_id.split("_")[2] # utt_id.split("_")[1].split("-")[1]
+        spk_id = utt_id.split("_")[3].split("-")[1] # utt_id.split("_")[1].split("-")[1]
         try:
             minf0 = float(f0_file[spk_id]["minf0"])
             maxf0 = float(f0_file[spk_id]["maxf0"])
