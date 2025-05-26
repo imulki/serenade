@@ -548,9 +548,9 @@ def main():
             if (f0[i] < thshld or f0[i-1] < thshld):
                 fluc = 0
             else:
-                fluc = (f0_smoothened[i] - f0_smoothened[i-1])
+                fluc = (f0_smoothened[i] - f0_smoothened[i-1]) / time_interval
             f0_fluc.append(fluc)
-        f0_fluc = np.array(f0_fluc)
+        f0_fluc = np.array(f0_fluc) / maxf0
 
         logging.info(f"hubert: {hubert.shape}")
         logging.info(f"logmel: {logmel.shape}")
