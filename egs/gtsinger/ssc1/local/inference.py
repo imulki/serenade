@@ -159,7 +159,7 @@ def linear_midi_shift(srcmidi, trgmidi):
 
 
 score_type = "est_lf0_score"
-exp_path = "/data/group1/z44568r/toolkits2/singstyle/egs/singstyle111/vc3/exp/train-gtsinger-cyclic_v9_proposed_cyclic_fix"
+exp_path = "/home/amogus/Research/SVCC/serenade/egs/gtsinger/ssc1/exp/train-gtsinger_exp1_cyclic"
 
 inference_dir = "results_est_1.0"
 wav_paths = glob.glob("dump/test-gtsinger/raw/dump.*/*.h5")
@@ -179,7 +179,7 @@ model = Serenade(
 )
 
 # Load model from checkpoint
-checkpoint_path = os.path.join(exp_path, "checkpoint-200000steps.pkl")
+checkpoint_path = os.path.join(exp_path, "checkpoint-87626steps.pkl")
 model.load_state_dict(torch.load(checkpoint_path, map_location="cpu")["model"])
 model = model.eval().to(device)
 

@@ -1,6 +1,6 @@
 {
-    "Breathy": "dump/train-gtsinger/raw/dump.2/english_English_EN-Tenor-1_Breathy_song9_Breathy_Group_0003.h5",
-    "Mixed": "dump/train-gtsinger/raw/dump.2/english_English_EN-Tenor-1_Mixed_Voice_and_Falsetto_song1_Mixed_Voice_Group_0010.h5",
-    "Falsetto": "dump/train-gtsinger/raw/dump.2/english_English_EN-Tenor-1_Mixed_Voice_and_Falsetto_song1_Falsetto_Group_0003.h5",
-    "Pharyngeal": "dump/train-gtsinger/raw/dump.2/english_English_EN-Tenor-1_Pharyngeal_song9_Pharyngeal_Group_0008.h5"
+    "Breathy": "dump/train-gtsinger/raw/dump.2/train_english_English_EN-Tenor-1_Breathy_song9_Breathy_Group_0003.h5",
+    "Mixed": "dump/train-gtsinger/raw/dump.2/train_english_English_EN-Tenor-1_Mixed_Voice_and_Falsetto_song1_Mixed_Voice_Group_0010.h5",
+    "Falsetto": "dump/train-gtsinger/raw/dump.2/train_english_English_EN-Tenor-1_Mixed_Voice_and_Falsetto_song1_Falsetto_Group_0003.h5",
+    "Pharyngeal": "dump/train-gtsinger/raw/dump.2/train_english_English_EN-Tenor-1_Pharyngeal_song9_Pharyngeal_Group_0008.h5"
 }
