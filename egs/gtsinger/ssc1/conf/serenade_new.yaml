@@ -23,7 +23,7 @@ midi_model_file: pt_models/midi_model.pt
 ###########################################################
 #              NETWORK ARCHITECTURE SETTING               #
 ###########################################################
-model_type: Serenade
+model_type: SerenadeNew
 model_params:
     input_dim: 768
     output_dim: 80
@@ -36,8 +36,8 @@ model_params:
 ###########################################################
 #                  TRAINING SETTING                       #
 ###########################################################
-trainer_type: SSCTrainer
-collater_type: SSCCollater
+trainer_type: SSCTrainerNew
+collater_type: SSCCollaterNew
 
 vocoder:
     checkpoint: pt_models/vocoder_gtsinger/vocoder.pkl
@@ -77,7 +77,7 @@ scheduler_params:
 train_max_steps: 40000                  # Number of training steps.
 save_interval_steps: 2500               # Interval steps to save checkpoint.
 eval_interval_steps: 2500                # Interval steps to evaluate the network.
-log_interval_steps: 500                # Interval steps to evaluate the network.
+log_interval_steps: 100                # Interval steps to evaluate the network.
 
 ###########################################################
 #                     OTHER SETTING                       #

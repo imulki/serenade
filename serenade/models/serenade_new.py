@@ -73,8 +73,8 @@ class SerenadeNew(torch.nn.Module):
             gst_token_dim=gst_embed_dim,
         )
 
-        # encoder outputs + targets + midi + loudness
-        conditioning_dim = output_dim + encoder_channels + 1 + 1
+        # encoder outputs + targets + midi + loudness + 2 * f0_fluctuation (They want an even number of dim)
+        conditioning_dim = output_dim + encoder_channels + 1 + 1 + 2
 
         # flowmatching model
         self.cfm_decoder = CFM(
@@ -111,6 +111,13 @@ class SerenadeNew(torch.nn.Module):
         Returns (inference):
             Tensor: Predicted mel spectrogram.
         """
+
+        # Roll the f0_fluc, to make it more adapt to foreign f0_fluc
+        roll_step1 = random.randint(0, f0_fluc.shape[1]-3)
+        roll_step2 = random.randint(0, f0_fluc.shape[1]-3)
+        f0_fluc_r1 = torch.roll(f0_fluc, roll_step1)
+        f0_fluc_r2 = torch.roll(f0_fluc, roll_step2)
+
         ret = {}
 
         enc_outs = self.encoder(x, lengths)
@@ -154,7 +161,7 @@ class SerenadeNew(torch.nn.Module):
         # mask conditioning features
         cond = cond * mask_c.permute(0, 2, 1)
 
-        enc_outs = torch.cat([enc_outs, midi, lft, f0_fluc, cond], dim=-1)
+        enc_outs = torch.cat([enc_outs, midi, lft, f0_fluc_r1, f0_fluc_r2, cond], dim=-1)
 
         ret["cfm_loss"], _ = self.cfm_decoder(
             x1=targets.permute(0, 2, 1),
@@ -188,9 +195,24 @@ class SerenadeNew(torch.nn.Module):
         # specify conditioning features (more flexible for changes in the future)
         cond = ref_logmel
 
+        # Adapt the length of F0_fluc is equal
+        new_f0_fluc = np.resize(ref_f0_fluc, f0_fluc.shape)
+
+        with open("a.txt", 'w') as f:
+            f.write(f'{f0_fluc.shape}')
+
+        # Roll the f0_fluc, to make it more adapt to foreign f0_fluc
+        roll_step1 = random.randint(0, new_f0_fluc.shape[1]-1)
+        roll_step2 = random.randint(0, new_f0_fluc.shape[1]-1)
+        ref_f0_fluc1 = torch.roll(ref_f0_fluc, roll_step1)
+        ref_f0_fluc2 = torch.roll(ref_f0_fluc, roll_step2)
+        f0_fluc_r1 = torch.roll(new_f0_fluc, roll_step1)
+        f0_fluc_r2 = torch.roll(new_f0_fluc, roll_step2)
+
+
         # add reference features to content features
         ref_enc_outs = self.encoder(ref_x, ref_lengths)
-        ref_enc_outs = torch.cat([ref_enc_outs, ref_midi, ref_lft, ref_f0_fluc, cond], dim=-1)
+        ref_enc_outs = torch.cat([ref_enc_outs, ref_midi, ref_lft, ref_f0_fluc1, ref_f0_fluc2, cond], dim=-1)
 
         # add zero vector replacing conditioning features, emulating masking
         zero_cond = torch.zeros(
@@ -199,7 +221,7 @@ class SerenadeNew(torch.nn.Module):
             cond.shape[-1],
             device=enc_outs_.device,
         )
-        enc_outs = torch.cat([enc_outs_, midi, lft, f0_fluc, zero_cond], dim=-1)
+        enc_outs = torch.cat([enc_outs_, midi, lft, f0_fluc_r1, f0_fluc_r2, zero_cond], dim=-1)
 
         # concatenate reference and source features in time dimension
         enc_outs = torch.cat([ref_enc_outs, enc_outs], dim=1)

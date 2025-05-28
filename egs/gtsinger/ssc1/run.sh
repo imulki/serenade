@@ -7,7 +7,7 @@
 . ./cmd.sh || exit 1;
 
 # basic settings
-stage=0        # stage to start
+stage=2        # stage to start
 stop_stage=99  # stage to stop
 verbose=1      # verbosity level (lower is less info)
 n_gpus=1       # number of gpus in training
@@ -19,14 +19,14 @@ f0_path=conf/f0.yaml
 ref_dict=conf/refstyles.json
 
 # dataset configuration
-db_root=downloads/SVCC2025   # path to the GTSinger dataset
-dumpdir=dump                # directory to dump full features
+db_root=downloads/smol2   # path to the GTSinger dataset
+dumpdir=dump_smol2                # directory to dump full features
 train_set=train-gtsinger
 dev_set=dev-gtsinger
 test_set=test-gtsinger
 skip_extract_train=False
 # training related setting
-tag="baseline"     # tag for directory to save model
+tag="baseline_smol"     # tag for directory to save model
 
 # pretrained model related
 pretrain=""           # (e.g. <path>/<to>/checkpoint-10000steps.pkl)
@@ -72,7 +72,7 @@ if [ "${stage}" -le 1 ] && [ "${stop_stage}" -ge 1 ]; then
         echo "Feature extraction start. See the progress via ${dumpdir}/${name}/raw/preprocessing.*.log."
         utils/make_subset_data.sh "data/${name}" "${n_jobs}" "${dumpdir}/${name}/raw"
         ${train_cmd} JOB=1:${n_jobs} "${dumpdir}/${name}/raw/preprocessing.JOB.log" \
-            serenade-preprocess \
+            serenade-preprocess-modded \
                 --config "${conf}" \
                 --scp "${dumpdir}/${name}/raw/wav.JOB.scp" \
                 --dumpdir "${dumpdir}/${name}/raw/dump.JOB" \
@@ -209,7 +209,7 @@ if [ "${stage}" -le 6 ] && [ "${stop_stage}" -ge 6 ]; then
         echo "Feature extraction start. See the progress via ${dumpdir}/${name}/raw/preprocessing.*.log."
         utils/make_subset_data.sh "data/${name}" "${n_jobs}" "${dumpdir}/${name}/raw"
         ${train_cmd} JOB=1:${n_jobs} "${dumpdir}/${name}/raw/preprocessing.JOB.log" \
-            serenade-preprocess \
+            serenade-preprocess-modded \
                 --config "${conf}" \
                 --scp "${dumpdir}/${name}/raw/wav.JOB.scp" \
                 --dumpdir "${dumpdir}/${name}/raw/dump.JOB" \
@@ -234,11 +234,10 @@ if [ "${stage}" -le 6 ] && [ "${stop_stage}" -ge 6 ]; then
         --outdir "${dumpdir}/${dev_set}_cyclic/raw" \
         --dumpdir "${dumpdir}" \
         --train_set "${dev_set}"
-fi
 
 if [ -z ${cyclic_pretrain} ]; then
-    [ -z "${checkpoint}" ] && checkpoint_cyclic="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
-    cyclic_pretrain=${checkpoint_cyclic}
+    [ -z "${checkpoint}" ] && checkpoint="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
+    cyclic_pretrain=${checkpoint}
 fi
 expdir=${expdir}_cyclic
 
@@ -257,7 +256,7 @@ if [ "${stage}" -le 7 ] && [ "${stop_stage}" -ge 7 ]; then
         ${train} \
             --config "${cyclic_conf}" \
             --train-dumpdir "${dumpdir}/${train_set}_cyclic/raw" \
-            --dev-dumpdir "${dumpdir}/${dev_set}_cyclic/raw" \
+            --dev-dumpdir "${dumpdir}/${dev_set}/raw" \
             --stats "${expdir}/stats.joblib" \
             --outdir "${expdir}" \
             --init-checkpoint "${cyclic_pretrain}" \

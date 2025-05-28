@@ -23,7 +23,7 @@ midi_model_file: pt_models/midi_model.pt
 ###########################################################
 #              NETWORK ARCHITECTURE SETTING               #
 ###########################################################
-model_type: Serenade
+model_type: SerenadeNew
 model_params:
     input_dim: 768
     output_dim: 80
@@ -36,8 +36,8 @@ model_params:
 ###########################################################
 #                  TRAINING SETTING                       #
 ###########################################################
-trainer_type: SSCTrainer
-collater_type: SSCCollater
+trainer_type: SSCTrainerNew
+collater_type: SSCCollaterNew
 
 vocoder:
     checkpoint: pt_models/vocoder_gtsinger/vocoder.pkl
@@ -48,7 +48,7 @@ vocoder:
 #                  DATA LOADER SETTING                    #
 ###########################################################
 score_type: est_lf0_score       # Type of MIDI information used: est_lf0_score, gt_lf0_score
-logmel_type: logmel             # Whether to load the source logmel (choices: logmel, cyclic_logmel)
+logmel_type: cyclic_logmel             # Whether to load the source logmel (choices: logmel, cyclic_logmel)
 batch_size: 4                   # Batch size. (For multi-gpu, this is the batch size per GPU.)
 pin_memory: true                # Whether to pin memory in Pytorch DataLoader.
 num_workers: 0                  # Number of workers in Pytorch DataLoader.
@@ -74,10 +74,10 @@ scheduler_params:
 ###########################################################
 #                    INTERVAL SETTING                     #
 ###########################################################
-train_max_steps: 40000                  # Number of training steps.
+train_max_steps: 20000                  # Number of training steps.
 save_interval_steps: 2500               # Interval steps to save checkpoint.
 eval_interval_steps: 2500                # Interval steps to evaluate the network.
-log_interval_steps: 500                # Interval steps to evaluate the network.
+log_interval_steps: 100                # Interval steps to evaluate the network.
 
 ###########################################################
 #                     OTHER SETTING                       #

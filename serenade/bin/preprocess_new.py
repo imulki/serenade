@@ -537,20 +537,16 @@ def main():
 
         # Calculate the F0 Fluctuation
         time = t
-        thshld = minf0 * .9
-        spliner = UnivariateSpline(time, f0)
+        f0_normed = f0 / maxf0
+        spliner = UnivariateSpline(time, f0_normed, s=10)
         f0_smoothened = spliner(time)
-        time_interval = time[1] - time[0]
-        f0_fluc = [0]
+        f0_fluc = []
 
-        for i in range(1, len(f0_smoothened)):
-            fluc = 0
-            if (f0[i] < thshld or f0[i-1] < thshld):
-                fluc = 0
-            else:
-                fluc = (f0_smoothened[i] - f0_smoothened[i-1]) / time_interval
+        for i in range(len(f0_smoothened)):
+            fluc = (f0_normed[i] - f0_smoothened[i])
             f0_fluc.append(fluc)
-        f0_fluc = np.array(f0_fluc) / maxf0
+
+        f0_fluc = np.array(f0_fluc)
 
         logging.info(f"hubert: {hubert.shape}")
         logging.info(f"logmel: {logmel.shape}")

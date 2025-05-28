@@ -9,24 +9,24 @@
 # basic settings
 stage=0        # stage to start
 stop_stage=99  # stage to stop
-verbose=1      # verbosity level (lower is less info)
+verbose=2      # verbosity level (lower is less info)
 n_gpus=1       # number of gpus in training
 n_jobs=2       # do NOT change unless you understand the code, number of parallel jobs in feature extraction
 
-conf=conf/serenade.yaml
-cyclic_conf=conf/serenade_cyclic.yaml
+conf=conf/serenade_new.yaml
+cyclic_conf=conf/serenade_cyclic_new.yaml
 f0_path=conf/f0.yaml
 ref_dict=conf/refstyles.json
 
 # dataset configuration
 db_root=downloads/smol2   # path to the GTSinger dataset
-dumpdir=dump                # directory to dump full features
+dumpdir=dump_smol2                # directory to dump full features
 train_set=train-gtsinger
 dev_set=dev-gtsinger
 test_set=test-gtsinger
 skip_extract_train=False
 # training related setting
-tag="baseline"     # tag for directory to save model
+tag="modded_smol2"     # tag for directory to save model
 
 # pretrained model related
 pretrain=""           # (e.g. <path>/<to>/checkpoint-10000steps.pkl)
@@ -72,7 +72,7 @@ if [ "${stage}" -le 1 ] && [ "${stop_stage}" -ge 1 ]; then
         echo "Feature extraction start. See the progress via ${dumpdir}/${name}/raw/preprocessing.*.log."
         utils/make_subset_data.sh "data/${name}" "${n_jobs}" "${dumpdir}/${name}/raw"
         ${train_cmd} JOB=1:${n_jobs} "${dumpdir}/${name}/raw/preprocessing.JOB.log" \
-            serenade-preprocess \
+            serenade-preprocess-modded \
                 --config "${conf}" \
                 --scp "${dumpdir}/${name}/raw/wav.JOB.scp" \
                 --dumpdir "${dumpdir}/${name}/raw/dump.JOB" \
@@ -94,7 +94,7 @@ if [ "${stage}" -le 2 ] && [ "${stop_stage}" -ge 2 ]; then
     # calculate statistics for normalization
     echo "Statistics computation start. See the progress via ${dumpdir}/${train_set}/compute_statistics.log."
     ${train_cmd} "${dumpdir}/${train_set}/compute_statistics.log" \
-        serenade-compute_stats \
+        serenade-compute_stats-modded \
             --config "${conf}" \
             --rootdir "${dumpdir}/${train_set}/raw" \
             --dumpdir "${dumpdir}/${train_set}" \
@@ -111,9 +111,9 @@ if [ "${stage}" -le 3 ] && [ "${stop_stage}" -ge 3 ]; then
     echo "Stage 3: Network training"
     [ ! -e "${expdir}" ] && mkdir -p "${expdir}"
     if [ "${n_gpus}" -gt 1 ]; then
-        train="torchrun --nnodes=1 --nproc_per_node=${n_gpus} serenade-train"
+        train="torchrun --nnodes=1 --nproc_per_node=${n_gpus} serenade-train-modded"
     else
-        train="serenade-train"
+        train="serenade-train-modded"
     fi
 
     cp "${dumpdir}/${train_set}/stats.joblib" "${expdir}/stats.joblib"
@@ -145,7 +145,7 @@ if [ "${stage}" -le 4 ] && [ "${stop_stage}" -ge 4 ]; then
         [ "${n_gpus}" -gt 1 ] && n_gpus=1
         echo "Decoding start. See the progress via ${outdir}/${name}/decode.*.log."
         ${cuda_cmd} JOB=1:${n_jobs} --gpu 1 "${outdir}/${name}/decode.JOB.log" \
-            serenade-decode \
+            serenade-decode-modded \
                 --dumpdir "${dumpdir}/${name}/raw/dump.JOB" \
                 --checkpoint "${checkpoint}" \
                 --stats "${expdir}/stats.joblib" \
@@ -174,7 +174,7 @@ if [ "${stage}" -le 5 ] && [ "${stop_stage}" -ge 5 ]; then
         [ "${n_gpus}" -gt 1 ] && n_gpus=1
         echo "Decoding start. See the progress via ${outdir}/${name}/decode.*.log."
         ${cuda_cmd} JOB=1:${n_jobs} --gpu 1 "${outdir}/${name}/decode.JOB.log" \
-            serenade-decode \
+            serenade-decode-modded \
                 --dumpdir "${dumpdir}/${name}/raw/dump.JOB" \
                 --checkpoint "${checkpoint}" \
                 --stats "${expdir}/stats.joblib" \
@@ -195,18 +195,21 @@ if [ "${stage}" -le 6 ] && [ "${stop_stage}" -ge 6 ]; then
     [ -z "${checkpoint}" ] && checkpoint="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
     outdir="${expdir}/results/$(basename "${checkpoint}" .pkl)"
     python3 local/create_wav_scp.py \
+        --input_dir "${outdir}/${dev_set}" \
+        --output_file "data/${dev_set}_cyclic/wav.scp"
+    python3 local/create_wav_scp.py \
         --input_dir "${outdir}/${train_set}" \
         --output_file "data/${train_set}_cyclic/wav.scp"
 
     # extract features from converted samples
     pids=()
-    for name in "${train_set}_cyclic"; do
+    for name in "${train_set}_cyclic" "${dev_set}_cyclic"; do
     (
         [ ! -e "${dumpdir}/${name}/raw" ] && mkdir -p "${dumpdir}/${name}/raw"
         echo "Feature extraction start. See the progress via ${dumpdir}/${name}/raw/preprocessing.*.log."
         utils/make_subset_data.sh "data/${name}" "${n_jobs}" "${dumpdir}/${name}/raw"
         ${train_cmd} JOB=1:${n_jobs} "${dumpdir}/${name}/raw/preprocessing.JOB.log" \
-            serenade-preprocess \
+            serenade-preprocess-modded \
                 --config "${conf}" \
                 --scp "${dumpdir}/${name}/raw/wav.JOB.scp" \
                 --dumpdir "${dumpdir}/${name}/raw/dump.JOB" \
@@ -227,11 +230,15 @@ if [ "${stage}" -le 6 ] && [ "${stop_stage}" -ge 6 ]; then
         --outdir "${dumpdir}/${train_set}_cyclic/raw" \
         --dumpdir "${dumpdir}" \
         --train_set "${train_set}"
+    python3 local/create_cyclic_dump.py \
+        --outdir "${dumpdir}/${dev_set}_cyclic/raw" \
+        --dumpdir "${dumpdir}" \
+        --train_set "${dev_set}"
 fi
 
 if [ -z ${cyclic_pretrain} ]; then
-    [ -z "${checkpoint}" ] && checkpoint="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
-    cyclic_pretrain=${checkpoint}
+    [ -z "${checkpoint}" ] && checkpoint_cyclic="$(ls -dt "${expdir}"/*.pkl | head -1 || true)"
+    cyclic_pretrain=${checkpoint_cyclic}
 fi
 expdir=${expdir}_cyclic
 
@@ -239,9 +246,9 @@ if [ "${stage}" -le 7 ] && [ "${stop_stage}" -ge 7 ]; then
     echo "Stage 7: Network training (Cyclic Training)"
     [ ! -e "${expdir}" ] && mkdir -p "${expdir}"
     if [ "${n_gpus}" -gt 1 ]; then
-        train="torchrun --nnodes=1 --nproc_per_node=${n_gpus} serenade-train"
+        train="torchrun --nnodes=1 --nproc_per_node=${n_gpus} serenade-train-modded"
     else
-        train="serenade-train"
+        train="serenade-train-modded"
     fi
 
     cp "${dumpdir}/${train_set}/stats.joblib" "${expdir}/stats.joblib"
@@ -250,7 +257,7 @@ if [ "${stage}" -le 7 ] && [ "${stop_stage}" -ge 7 ]; then
         ${train} \
             --config "${cyclic_conf}" \
             --train-dumpdir "${dumpdir}/${train_set}_cyclic/raw" \
-            --dev-dumpdir "${dumpdir}/${dev_set}/raw" \
+            --dev-dumpdir "${dumpdir}/${dev_set}_cyclic/raw" \
             --stats "${expdir}/stats.joblib" \
             --outdir "${expdir}" \
             --init-checkpoint "${cyclic_pretrain}" \
@@ -276,7 +283,7 @@ if [ "${stage}" -le 8 ] && [ "${stop_stage}" -ge 8 ]; then
         [ "${n_gpus}" -gt 1 ] && n_gpus=1
         echo "Decoding start. See the progress via ${outdir}/${name}/decode.*.log."
         ${cuda_cmd} JOB=1:${n_jobs} --gpu 1 "${outdir}/${name}/decode.JOB.log" \
-            serenade-decode \
+            serenade-decode-modded \
                 --dumpdir "${dumpdir}/${name}/raw/dump.JOB" \
                 --checkpoint "${checkpoint}" \
                 --stats "${expdir}/stats.joblib" \

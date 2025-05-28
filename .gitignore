@@ -134,6 +134,7 @@ dmypy.json
 exp/
 downloads/
 dump/
+dump*/
 data/
 pt_models/
 *.done

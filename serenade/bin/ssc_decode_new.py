@@ -20,7 +20,7 @@ import json
 import glob
 
 import serenade.models
-from serenade.datasets.audio_mel_dataset import FeatsDataset
+from serenade.datasets.audio_mel_dataset import FeatsDataset, FeatsDatasetNew
 from serenade.vocoder import Vocoder
 from serenade.utils.masking import make_non_pad_mask
 
@@ -324,7 +324,7 @@ def main():
         raise ValueError("Please specify either --dumpdir or --feats-scp.")
 
     # get dataset
-    dataset = FeatsDataset(
+    dataset = FeatsDatasetNew(
         root_dir=args.dumpdir,
         scaler=scaler,
         score_type="est_lf0_score",  # this is fixed, we never use gt_lf0_score in inference
